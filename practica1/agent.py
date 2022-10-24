@@ -7,6 +7,7 @@ ClauPercepcio:
 """
 from ia_2022 import entorn
 from practica1 import joc, entorn as entorn_practica1
+import copy
 
 
 
@@ -50,6 +51,13 @@ class Estado:
     # Método para generar hijos de un estado
     def generar_hijos(self):
         hijos = [] # Lista de estados
+        for columna in range(0, self.dimension):
+            for fila in range(0, self.dimension):
+                if not self.es_meta():
+                    estadoAux = copy.deepcopy(self.estado)
+                    estadoAux.append([fila, columna])
+                    hijos.append(estadoAux)
+
 
         # Primero para generar los hijos debemos saber el estado inicial y el estado final
         # sabiendo el estado inicial de la pizza y el estado inicial de la rana, podemos calcular de la forma que nos convenga
