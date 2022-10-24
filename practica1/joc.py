@@ -104,6 +104,9 @@ class Rana(agent_lib.Agent):
     def posicio(self):
         return self.__posicio
 
+    def get_rana(self):
+        return self.__posicio
+        
     @posicio.setter
     def posicio(self, val: tuple[int, int]):
         self.__posicio = val
@@ -151,6 +154,9 @@ class Laberint(joc.Joc):
 
         self.__pos_menjar = self.set_menjar()
 
+    def get_pizza(self):
+        return self.__pos_menjar
+        
     @property
     def posicio_agents(self):
         posicions = {}
