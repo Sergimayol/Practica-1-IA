@@ -6,7 +6,7 @@ ClauPercepcio:
     PARETS = 2
 """
 from ia_2022 import entorn
-from practica1 import joc
+from practica1 import joc, entorn as entorn_practica1
 
 
 class Rana(joc.Rana):
@@ -19,4 +19,7 @@ class Rana(joc.Rana):
     def actua(
             self, percep: entorn.Percepcio
     ) -> entorn.Accio | tuple[entorn.Accio, object]:
-        pass
+        # Implmentar aquí lógica agente
+
+        # EN un futuro cambiar, de momento es para que no de error
+        return entorn_practica1.AccionsRana.ESPERAR
