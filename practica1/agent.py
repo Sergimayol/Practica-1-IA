@@ -8,6 +8,7 @@ ClauPercepcio:
 from ia_2022 import entorn
 from practica1 import joc, entorn as entorn_practica1
 import copy
+from practica1.entorn import ClauPercepcio
 
 
 
@@ -22,7 +23,9 @@ class Rana(joc.Rana):
             self, percep: entorn.Percepcio
     ) -> entorn.Accio | tuple[entorn.Accio, object]:
         # Implmentar aquí lógica agente
-
+        # Estado inicial de la rana
+        estado_inicial = Estado(percep[entorn_practica1.ClauPercepcio.POSICIO], 0, padre=None)
+        estado_inicial.generar_hijos()
         # EN un futuro cambiar, de momento es para que no de error
         return entorn_practica1.AccionsRana.ESPERAR
 
@@ -47,17 +50,35 @@ class Estado:
     
     def __str__(self) -> str:
         return str(self.__info)
+
+    def legal(self) -> bool:
+        # Comprobar si el movimiento es legal
+        if [ClauPercepcio.PARETS] == entorn_practica1.Direccio.ESQUERRE:
+            return False
+        
+        if [ClauPercepcio.PARETS] == entorn_practica1.Direccio.DRETA:
+            return False
+
+        if [ClauPercepcio.PARETS] == entorn_practica1.Direccio.DALT:
+            return False
+        
+        if [ClauPercepcio.PARETS] == entorn_practica1.Direccio.BAIX:
+            return False
+        return True
     
     # Método para generar hijos de un estado
     def generar_hijos(self):
         hijos = [] # Lista de estados
-        for columna in range(0, self.dimension):
-            for fila in range(0, self.dimension):
+        for columna in range(len(self.__info)):
+            for fila in range(len(self.__info)):
                 if not self.es_meta():
-                    estadoAux = copy.deepcopy(self.estado)
-                    estadoAux.append([fila, columna])
+                    estadoAux = copy.deepcopy(self.__info)
                     hijos.append(estadoAux)
 
+                    print(estadoAux)
+
+        #print(hijos)
+        return hijos
 
         # Primero para generar los hijos debemos saber el estado inicial y el estado final
         # sabiendo el estado inicial de la pizza y el estado inicial de la rana, podemos calcular de la forma que nos convenga
