@@ -30,7 +30,7 @@ class Rana(joc.Rana):
         return entorn_practica1.AccionsRana.ESPERAR
 
 class Estado:
-    def __init__(self, info: str, coste: int, padre=None):
+    def __init__(self, info: dict, coste: int, padre=None):
         self.__info = info   #[posicio, olor, parets]
         self.__padre = padre # Estado
         self.__coste = coste # Coste de las acciones
