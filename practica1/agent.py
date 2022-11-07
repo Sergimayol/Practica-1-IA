@@ -18,7 +18,6 @@ class Rana(joc.Rana):
 
     def pinta(self, display):
         pass
-
     def actua(
             self, percep: entorn.Percepcio
     ) -> entorn.Accio | tuple[entorn.Accio, object]:
@@ -37,7 +36,7 @@ class Estado:
 
     def __hash__(self) -> int:
         return hash(tuple(self.__info))
-
+    
     @property
     def info(self):
         return self.__info
@@ -69,15 +68,26 @@ class Estado:
     # Método para generar hijos de un estado
     def generar_hijos(self):
         hijos = [] # Lista de estados
-        for columna in range(len(self.__info)):
-            for fila in range(len(self.__info)):
-                if not self.es_meta():
-                    estadoAux = copy.deepcopy(self.__info)
-                    hijos.append(estadoAux)
-
-                    print(estadoAux)
-
-        #print(hijos)
+        # Generar hijos
+        hijo = copy.deepcopy(self.__info)
+        pos_inicial = hijo.get('Miquel') #Se devuelve la tupla inicial
+        hijos.append(pos_inicial) #Se añade la tupla inicial a la lista de hijos
+        # Se generan los hijos
+        # Movimientos posibles
+        # Se mueve a la derecha 
+        if (pos_inicial[0] + 1, pos_inicial[1]) not in hijos:
+            hijos.append((pos_inicial[0] + 1, pos_inicial[1]))
+        # Se mueve a la izquierda
+        if (pos_inicial[0] - 1, pos_inicial[1]) not in hijos:
+            hijos.append((pos_inicial[0] - 1, pos_inicial[1]))
+        # Se mueve hacia arriba
+        if (pos_inicial[0], pos_inicial[1] + 1) not in hijos:
+            hijos.append((pos_inicial[0], pos_inicial[1] + 1))
+        # Se mueve hacia abajo
+        if (pos_inicial[0], pos_inicial[1] - 1) not in hijos:
+            hijos.append((pos_inicial[0], pos_inicial[1] - 1))
+                      
+        print(hijos)
         return hijos
 
         # Primero para generar los hijos debemos saber el estado inicial y el estado final
