@@ -76,7 +76,7 @@ class Estado:
         # Movimientos posibles
         # Se mueve a la derecha 
         if (pos_inicial[0] + 1, pos_inicial[1]) not in hijos:
-            hijos.append((pos_inicial[0] + 1, pos_inicial[1]))
+            hijos.append(Estado(pos_inicial[0] + 1, pos_inicial[1]), self.__coste + 1, (self.AccionsRana.MOURE, 1))
         # Se mueve a la izquierda
         if (pos_inicial[0] - 1, pos_inicial[1]) not in hijos:
             hijos.append((pos_inicial[0] - 1, pos_inicial[1]))
@@ -86,7 +86,7 @@ class Estado:
         # Se mueve hacia abajo
         if (pos_inicial[0], pos_inicial[1] - 1) not in hijos:
             hijos.append((pos_inicial[0], pos_inicial[1] - 1))
-                      
+
         print(hijos)
         return hijos
 
