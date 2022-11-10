@@ -8,7 +8,7 @@ ClauPercepcio:
 from ia_2022 import entorn
 from practica1 import joc, entorn as entorn_practica1
 import copy
-from practica1.entorn import ClauPercepcio
+from practica1.entorn import ClauPercepcio, AccionsRana, Direccio
 
 
 
@@ -68,30 +68,48 @@ class Estado:
     # Método para generar hijos de un estado
     def generar_hijos(self):
         hijos = [] # Lista de estados
-        # Generar hijos
         hijo = copy.deepcopy(self.__info)
         pos_inicial = hijo.get('Miquel') #Se devuelve la tupla inicial
         hijos.append(pos_inicial) #Se añade la tupla inicial a la lista de hijos
         # Se generan los hijos
         # Movimientos posibles
-        # Se mueve a la derecha 
+        # Se comprueba si es legal
+
+        #pos_inicial[0] = Columna
+        #pos_inicial[1] = Fila
+        coste = 0
+        # Se mueve a la derecha
         if (pos_inicial[0] + 1, pos_inicial[1]) not in hijos:
-            hijos.append(Estado(pos_inicial[0] + 1, pos_inicial[1]), self.__coste + 1, (self.AccionsRana.MOURE, 1))
+            #Si no está en la última columna
+            if (pos_inicial[0]<7):
+                #Añadimos el hijo
+                actual = (pos_inicial[0] + 1, pos_inicial[1])
+                hijos.append(Estado(actual, self.__coste + 1, (self, (AccionsRana.MOURE, Direccio.DRETA))))
         # Se mueve a la izquierda
         if (pos_inicial[0] - 1, pos_inicial[1]) not in hijos:
-            hijos.append((pos_inicial[0] - 1, pos_inicial[1]))
+            #Si no está en la primera columna
+            if (pos_inicial[0]>0):
+                #Añadimos el hijo
+                hijos.append((pos_inicial[0] - 1, pos_inicial[1]))
         # Se mueve hacia arriba
         if (pos_inicial[0], pos_inicial[1] + 1) not in hijos:
-            hijos.append((pos_inicial[0], pos_inicial[1] + 1))
+            #Si no está en la primera fila
+            if (pos_inicial[1]>0):
+                #Añadimos el hijo
+                hijos.append((pos_inicial[0], pos_inicial[1] - 1))
         # Se mueve hacia abajo
-        if (pos_inicial[0], pos_inicial[1] - 1) not in hijos:
-            hijos.append((pos_inicial[0], pos_inicial[1] - 1))
+        if (pos_inicial[0], pos_inicial[1] + 1) not in hijos:
+            #Si no está en la ultima fila
+            if (pos_inicial[1] < 7):
+                #Añadimos el hijo
+                hijos.append((pos_inicial[0], pos_inicial[1] + 1))
 
         print(hijos)
+        #Devolvemos los hijos
         return hijos
 
         # Primero para generar los hijos debemos saber el estado inicial y el estado final
         # sabiendo el estado inicial de la pizza y el estado inicial de la rana, podemos calcular de la forma que nos convenga
         # es decir, si por ejemplo tenemos la pizza en la posición (0,0) y la rana en la posición (1,1) entonces sabemos que la rana debe igualar la posición de la pizza
-        # y hará los movimientos basados en el algoritmo de búsqueda hasta llegar a la posición.
+        # y hará los movimientos basados en el algoritmo de búsqueda hasta llegar a la posición generando los hijos pertinentes.
 
