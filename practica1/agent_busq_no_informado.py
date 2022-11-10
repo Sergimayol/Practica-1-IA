@@ -3,6 +3,7 @@ from practica1.agent import Estado
 from ia_2022 import entorn
 from practica1 import entorn as entorn_practica1
 
+
 class RanaBusquedaNoInformada(Rana):
     def __init__(self, *args, **kwargs):
         super(Rana, self).__init__(*args, **kwargs)
@@ -18,7 +19,7 @@ class RanaBusquedaNoInformada(Rana):
         while len(self.abiertos) > 0:
             actual = self.abiertos[0]
             self.abiertos = self.abiertos[1:]
-            
+
             if actual in self.cerrados:
                 continue
             estados_hijos = actual.generar_hijos()
@@ -32,7 +33,7 @@ class RanaBusquedaNoInformada(Rana):
             self.cerrados.add(actual)
         if actual is None:
             raise ValueError("Error al buscar")
-    
+
         if actual.es_meta():
             acciones = []
             iterador = actual
@@ -45,18 +46,13 @@ class RanaBusquedaNoInformada(Rana):
             return True
 
     def actua(
-            self, percep: entorn.Percepcio
+        self, percep: entorn.Percepcio
     ) -> entorn.Accio | tuple[entorn.Accio, object]:
         # Implmentar aquí lógica agente
         # Estado inicial de la rana
-        estado_inicial = Estado(percep[entorn_practica1.ClauPercepcio.POSICIO], 0, padre=None)
-        if self.acciones is None:
-            self._buscar(estado = estado_inicial)
-        if len(self.acciones) > 0:
-            acc = self.acciones.pop()
-
-            return acc[0], acc[1]
-        
-        else:
-            # EN un futuro cambiar, de momento es para que no de error
-            return entorn_practica1.AccionsRana.ESPERAR
+        estado_inicial = Estado(
+            percep[entorn_practica1.ClauPercepcio.POSICIO], 0, padre=None
+        )
+        nombres_ranas = list(estado_inicial.info.keys())
+        estado_inicial.generar_hijos(nombres_ranas[0])
+        return entorn_practica1.AccionsRana.ESPERAR

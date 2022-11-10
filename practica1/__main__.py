@@ -14,14 +14,14 @@ from practica1 import entorn as entorn_practica1
 
 def main():
     rana = agent_busq_no_informado.RanaBusquedaNoInformada("Miquel")
+    rana2 = agent_busq_no_informado.RanaBusquedaNoInformada("Pep")
     lab = joc.Laberint([rana], parets=True)
     pos_rana = rana.get_rana()
     pizza = lab.get_pizza()
-    print(pizza)    # Posición estado inicial pizza
-    print(pos_rana) # Posición estado inicial rana
+    print(pizza)  # Posición estado inicial pizza
+    print(pos_rana)  # Posición estado inicial rana
     print("=========================================")
     lab.comencar()
-
 
 
 if __name__ == "__main__":
