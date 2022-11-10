@@ -21,18 +21,14 @@ class Rana(joc.Rana):
     def actua(
         self, percep: entorn.Percepcio
     ) -> entorn.Accio | tuple[entorn.Accio, object]:
-        # Implmentar aquí lógica agente
-        # Estado inicial de la rana
-        estado_inicial = Estado(percep[ClauPercepcio.POSICIO], 0, padre=None)
-        # EN un futuro cambiar, de momento es para que no de error
-        return entorn_practica1.AccionsRana.ESPERAR
+        pass
 
 
 class Estado:
     def __init__(self, info: dict, coste: int, padre=None):
-        self.__info = info  # [posicio, olor, parets]
-        self.__padre = padre  # Estado
-        self.__coste = coste  # Coste de las acciones
+        self.__info = info  # información sobre la rana
+        self.__padre = padre  # padre del estado
+        self.__coste = coste  # coste del estado
         self.__max_tablero = 7
 
     def __hash__(self) -> int:
@@ -43,6 +39,8 @@ class Estado:
         return self.__info
 
     def es_meta(self) -> bool:
+        # TODO: comprobar si la rana esta en la meta
+        # la implementación actual es para hacer pruebas
         return (
             self.__info.get(ClauPercepcio.POSICIO).get("Miquel")
             == self[ClauPercepcio.OLOR]
@@ -54,44 +52,38 @@ class Estado:
     def __str__(self) -> str:
         return str(self.__info)
 
+    def get_frog_names(self) -> list[str]:
+        return list(self.__info.get(ClauPercepcio.POSICIO).keys())
+
     def legal(self, pos_actual: tuple) -> bool:
         # obtener los muros
         walls = self.__info.get(ClauPercepcio.PARETS)
         # comprobar si la posicion actual esta en los muros
-        if pos_actual in walls:
-            return False
-        return True
+        return pos_actual not in walls
 
-    def estado_inicial(self):
-        hijo = copy.deepcopy(self.__info)
-        print("hijo: ", hijo)
-        print("info: ", self.__info)
-        print("claves: ", self.__info.keys())
-        # Get all the keys
-        keys = list(self.__info.keys())
-        print("keys: ", keys)
+    def generar_hijos(self, nombre_rana: str) -> list:
+        """
+        Esta funcion genera los posibles estados hijos de un estado,
+        siempre y cuando sean legales.
 
-        return 0
+        Args:
+            nombre_rana (_str_): nombre de la rana que se desea generar los hijos
 
-    # Método para generar hijos de un estado
-    def generar_hijos(self, nombre_rana):
-        debug = False
+        Returns:
+            _list_: list de estados hijos generados
+        """
+        debug, print_hijos = False, False
 
-        if debug:
-            self.estado_inicial()
+        hijos = []
 
-        hijos = []  # Lista de estados
-
-        pos_actual = self.__info.get(ClauPercepcio.POSICIO).get(nombre_rana)
-        # print("pos_actual: ", pos_actual)
-
-        # print("info: ", self.__info)
         # pos 0 = x, pos 1 = y (empiezan en 0)
+        pos_actual = self.__info.get(ClauPercepcio.POSICIO).get(nombre_rana)
+
         if pos_actual[0] > 0:
             # movimientos a la izquierda
-            hijo = copy.deepcopy(self.__info)
             new_pos = (pos_actual[0] - 1, pos_actual[1])
             if self.legal(new_pos):
+                hijo = copy.deepcopy(self.__info)
                 hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
                 hijos.append(Estado(hijo, self.__coste + 1, self))
 
@@ -100,9 +92,9 @@ class Estado:
                 print("hijo: ", hijo)
 
             if pos_actual[0] > 1:
-                hijo = copy.deepcopy(self.__info)
                 new_pos = (pos_actual[0] - 2, pos_actual[1])
                 if self.legal(new_pos):
+                    hijo = copy.deepcopy(self.__info)
                     hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
                     hijos.append(Estado(hijo, self.__coste + 2, self))
 
@@ -112,9 +104,9 @@ class Estado:
 
         if pos_actual[0] < self.__max_tablero:
             # movimientos a la derecha
-            hijo = copy.deepcopy(self.__info)
             new_pos = (pos_actual[0] + 1, pos_actual[1])
             if self.legal(new_pos):
+                hijo = copy.deepcopy(self.__info)
                 hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
                 hijos.append(Estado(hijo, self.__coste + 1, self))
 
@@ -123,9 +115,9 @@ class Estado:
                 print("hijo: ", hijo)
 
             if pos_actual[0] < self.__max_tablero - 1:
-                hijo = copy.deepcopy(self.__info)
                 new_pos = (pos_actual[0] + 2, pos_actual[1])
                 if self.legal(new_pos):
+                    hijo = copy.deepcopy(self.__info)
                     hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
                     hijos.append(Estado(hijo, self.__coste + 2, self))
 
@@ -135,9 +127,9 @@ class Estado:
 
         if pos_actual[1] > 0:
             # movimientos hacia arriba
-            hijo = copy.deepcopy(self.__info)
             new_pos = (pos_actual[0], pos_actual[1] - 1)
             if self.legal(new_pos):
+                hijo = copy.deepcopy(self.__info)
                 hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
                 hijos.append(Estado(hijo, self.__coste + 1, self))
 
@@ -146,9 +138,9 @@ class Estado:
                 print("hijo: ", hijo)
 
             if pos_actual[1] > 1:
-                hijo = copy.deepcopy(self.__info)
                 new_pos = (pos_actual[0], pos_actual[1] - 2)
                 if self.legal(new_pos):
+                    hijo = copy.deepcopy(self.__info)
                     hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
                     hijos.append(Estado(hijo, self.__coste + 2, self))
 
@@ -158,9 +150,9 @@ class Estado:
 
         if pos_actual[1] < self.__max_tablero:
             # movimientos hacia abajo
-            hijo = copy.deepcopy(self.__info)
             new_pos = (pos_actual[0], pos_actual[1] + 1)
             if self.legal(new_pos):
+                hijo = copy.deepcopy(self.__info)
                 hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
                 hijos.append(Estado(hijo, self.__coste + 1, self))
 
@@ -169,9 +161,9 @@ class Estado:
                 print("hijo: ", hijo)
 
             if pos_actual[1] < self.__max_tablero - 1:
-                hijo = copy.deepcopy(self.__info)
                 new_pos = (pos_actual[0], pos_actual[1] + 2)
                 if self.legal(new_pos):
+                    hijo = copy.deepcopy(self.__info)
                     hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
                     hijos.append(Estado(hijo, self.__coste + 2, self))
 
@@ -179,12 +171,8 @@ class Estado:
                     print("movimiento hacia abajo +2")
                     print("hijo: ", hijo)
 
-        # for hijo in hijos:
-        #   print("hijo: ", hijo.info.get(ClauPercepcio.POSICIO))
+        if print_hijos:
+            for hijo in hijos:
+                print("hijo: ", hijo.info.get(ClauPercepcio.POSICIO))
 
         return hijos
-
-        # Primero para generar los hijos debemos saber el estado inicial y el estado final
-        # sabiendo el estado inicial de la pizza y el estado inicial de la rana, podemos calcular de la forma que nos convenga
-        # es decir, si por ejemplo tenemos la pizza en la posición (0,0) y la rana en la posición (1,1) entonces sabemos que la rana debe igualar la posición de la pizza
-        # y hará los movimientos basados en el algoritmo de búsqueda hasta llegar a la posición generando los hijos pertinentes.
