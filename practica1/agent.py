@@ -33,6 +33,7 @@ class Estado:
         self.__info = info  # [posicio, olor, parets]
         self.__padre = padre  # Estado
         self.__coste = coste  # Coste de las acciones
+        self.__max_tablero = 7
 
     def __hash__(self) -> int:
         return hash(tuple(self.__info))
@@ -106,7 +107,7 @@ class Estado:
 
                 hijos.append(Estado(hijo, self.__coste + 2, self))
 
-        if pos_actual[0] < 7:
+        if pos_actual[0] < self.__max_tablero:
             # movimientos a la derecha
             hijo = copy.deepcopy(self.__info)
             hijo[nombre_rana] = (pos_actual[0] + 1, pos_actual[1])
@@ -116,7 +117,7 @@ class Estado:
                 print("hijo: ", hijo)
 
             hijos.append(Estado(hijo, self.__coste + 1, self))
-            if pos_actual[0] < 6:
+            if pos_actual[0] < self.__max_tablero - 1:
                 hijo[nombre_rana] = (pos_actual[0] + 2, pos_actual[1])
 
                 if debug:
@@ -144,7 +145,7 @@ class Estado:
 
                 hijos.append(Estado(hijo, self.__coste + 2, self))
 
-        if pos_actual[1] < 7:
+        if pos_actual[1] < self.__max_tablero:
             # movimientos hacia abajo
             hijo = copy.deepcopy(self.__info)
             hijo[nombre_rana] = (pos_actual[0], pos_actual[1] + 1)
@@ -154,7 +155,7 @@ class Estado:
                 print("hijo: ", hijo)
 
             hijos.append(Estado(hijo, self.__coste + 1, self))
-            if pos_actual[1] < 6:
+            if pos_actual[1] < self.__max_tablero - 1:
                 hijo[nombre_rana] = (pos_actual[0], pos_actual[1] + 2)
 
                 if debug:
