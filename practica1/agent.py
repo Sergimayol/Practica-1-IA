@@ -68,7 +68,7 @@ class Estado:
     # Método para generar hijos de un estado
     def generar_hijos(self):
         hijos = [] # Lista de estados
-        hijo = copy.deepcopy(self.__info)
+        hijo = copy.deepcopy(self.__info) #Pasamos la información inicial del estado
         pos_inicial = hijo.get('Miquel') #Se devuelve la tupla inicial
         hijos.append(pos_inicial) #Se añade la tupla inicial a la lista de hijos
         # Se generan los hijos
