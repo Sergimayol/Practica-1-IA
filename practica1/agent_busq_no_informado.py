@@ -54,5 +54,6 @@ class RanaBusquedaNoInformada(Rana):
             percep[entorn_practica1.ClauPercepcio.POSICIO], 0, padre=None
         )
         nombres_ranas = list(estado_inicial.info.keys())
-        estado_inicial.generar_hijos(nombres_ranas[0])
+        for rana in nombres_ranas:
+            estado_inicial.generar_hijos(rana)
         return entorn_practica1.AccionsRana.ESPERAR
