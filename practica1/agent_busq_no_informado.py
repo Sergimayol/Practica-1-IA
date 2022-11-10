@@ -21,11 +21,6 @@ class RanaBusquedaNoInformada(Rana):
             
             if actual in self.cerrados:
                 continue
-
-            if not actual.es_segur():
-                self.cerrados.add(actual)
-                continue
-
             estados_hijos = actual.generar_hijos()
 
             if actual.es_meta():
@@ -58,7 +53,9 @@ class RanaBusquedaNoInformada(Rana):
         if self.acciones is None:
             self._buscar(estado = estado_inicial)
         if len(self.acciones) > 0:
-            return entorn_practica1.AccionsRana.MOURE, self.acciones.pop()
+            acc = self.acciones.pop()
+
+            return acc[0], acc[1]
         
         else:
             # EN un futuro cambiar, de momento es para que no de error
