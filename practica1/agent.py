@@ -77,7 +77,6 @@ class Estado:
 
         #pos_inicial[0] = Columna
         #pos_inicial[1] = Fila
-        coste = 0
         # Se mueve a la derecha
         if (pos_inicial[0] + 1, pos_inicial[1]) not in hijos:
             #Si no está en la última columna
@@ -90,21 +89,24 @@ class Estado:
             #Si no está en la primera columna
             if (pos_inicial[0]>0):
                 #Añadimos el hijo
-                hijos.append((pos_inicial[0] - 1, pos_inicial[1]))
+                actual = (pos_inicial[0] - 1, pos_inicial[1])
+                hijos.append(Estado(actual, self.__coste + 1, (self, (AccionsRana.MOURE, Direccio.ESQUERRE))))
         # Se mueve hacia arriba
         if (pos_inicial[0], pos_inicial[1] + 1) not in hijos:
             #Si no está en la primera fila
             if (pos_inicial[1]>0):
                 #Añadimos el hijo
-                hijos.append((pos_inicial[0], pos_inicial[1] - 1))
+                actual = (pos_inicial[0], pos_inicial[1] + 1)
+                hijos.append(Estado(actual, self.__coste + 1, (self, (AccionsRana.MOURE, Direccio.DALT))))
         # Se mueve hacia abajo
-        if (pos_inicial[0], pos_inicial[1] + 1) not in hijos:
+        if (pos_inicial[0], pos_inicial[1] - 1) not in hijos:
             #Si no está en la ultima fila
             if (pos_inicial[1] < 7):
                 #Añadimos el hijo
-                hijos.append((pos_inicial[0], pos_inicial[1] + 1))
+                actual = (pos_inicial[0], pos_inicial[1] - 1)
+                hijos.append(Estado(actual, self.__coste + 1, (self, (AccionsRana.MOURE, Direccio.BAIX))))
 
-        print(hijos)
+        #print(hijos)
         #Devolvemos los hijos
         return hijos
 
