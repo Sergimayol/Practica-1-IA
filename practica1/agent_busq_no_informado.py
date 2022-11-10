@@ -50,10 +50,9 @@ class RanaBusquedaNoInformada(Rana):
     ) -> entorn.Accio | tuple[entorn.Accio, object]:
         # Implmentar aquí lógica agente
         # Estado inicial de la rana
-        estado_inicial = Estado(
-            percep[entorn_practica1.ClauPercepcio.POSICIO], 0, padre=None
-        )
+        estado_inicial = Estado(percep.to_dict(), 0, padre=None)
+
         nombres_ranas = list(estado_inicial.info.keys())
-        for rana in nombres_ranas:
-            estado_inicial.generar_hijos(rana)
+        # for rana in nombres_ranas:
+        estado_inicial.generar_hijos("Miquel")
         return entorn_practica1.AccionsRana.ESPERAR

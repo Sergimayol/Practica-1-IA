@@ -43,7 +43,10 @@ class Estado:
         return self.__info
 
     def es_meta(self) -> bool:
-        return self.__info == ClauPercepcio.OLOR
+        return (
+            self.__info.get(ClauPercepcio.POSICIO).get("Miquel")
+            == self[ClauPercepcio.OLOR]
+        )
 
     def padre(self):
         return self.__padre
@@ -51,18 +54,11 @@ class Estado:
     def __str__(self) -> str:
         return str(self.__info)
 
-    def legal(self) -> bool:
-        # Comprobar si el movimiento es legal
-        if [ClauPercepcio.PARETS] == Direccio.ESQUERRE:
-            return False
-
-        if [ClauPercepcio.PARETS] == Direccio.DRETA:
-            return False
-
-        if [ClauPercepcio.PARETS] == Direccio.DALT:
-            return False
-
-        if [ClauPercepcio.PARETS] == Direccio.BAIX:
+    def legal(self, pos_actual: tuple) -> bool:
+        # obtener los muros
+        walls = self.__info.get(ClauPercepcio.PARETS)
+        # comprobar si la posicion actual esta en los muros
+        if pos_actual in walls:
             return False
         return True
 
@@ -74,95 +70,117 @@ class Estado:
         # Get all the keys
         keys = list(self.__info.keys())
         print("keys: ", keys)
-        posicion_inicial = hijo["Miquel"]
-        return posicion_inicial
+
+        return 0
 
     # Método para generar hijos de un estado
     def generar_hijos(self, nombre_rana):
-        debug = True
-        self.estado_inicial()
+        debug = False
+
+        if debug:
+            self.estado_inicial()
+
         hijos = []  # Lista de estados
-        pos_actual = self.info.get(nombre_rana)  # Se devuelve la tupla inicial
-        # Se generan los hijos
-        # Movimientos posibles
-        # Se comprueba si es legal
-        print("pos_actual: ", pos_actual)
+
+        pos_actual = self.__info.get(ClauPercepcio.POSICIO).get(nombre_rana)
+        # print("pos_actual: ", pos_actual)
+
+        # print("info: ", self.__info)
         # pos 0 = x, pos 1 = y (empiezan en 0)
         if pos_actual[0] > 0:
             # movimientos a la izquierda
             hijo = copy.deepcopy(self.__info)
-            hijo[nombre_rana] = (pos_actual[0] - 1, pos_actual[1])
+            new_pos = (pos_actual[0] - 1, pos_actual[1])
+            if self.legal(new_pos):
+                hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
+                hijos.append(Estado(hijo, self.__coste + 1, self))
 
             if debug:
                 print("movimiento a la izquierda +1")
                 print("hijo: ", hijo)
 
-            hijos.append(Estado(hijo, self.__coste + 1, self))
             if pos_actual[0] > 1:
-                hijo[nombre_rana] = (pos_actual[0] - 2, pos_actual[1])
+                hijo = copy.deepcopy(self.__info)
+                new_pos = (pos_actual[0] - 2, pos_actual[1])
+                if self.legal(new_pos):
+                    hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
+                    hijos.append(Estado(hijo, self.__coste + 2, self))
 
                 if debug:
                     print("movimiento a la izquierda +2")
                     print("hijo: ", hijo)
 
-                hijos.append(Estado(hijo, self.__coste + 2, self))
-
         if pos_actual[0] < self.__max_tablero:
             # movimientos a la derecha
             hijo = copy.deepcopy(self.__info)
-            hijo[nombre_rana] = (pos_actual[0] + 1, pos_actual[1])
+            new_pos = (pos_actual[0] + 1, pos_actual[1])
+            if self.legal(new_pos):
+                hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
+                hijos.append(Estado(hijo, self.__coste + 1, self))
 
             if debug:
                 print("movimiento a la derecha +1")
                 print("hijo: ", hijo)
 
-            hijos.append(Estado(hijo, self.__coste + 1, self))
             if pos_actual[0] < self.__max_tablero - 1:
-                hijo[nombre_rana] = (pos_actual[0] + 2, pos_actual[1])
+                hijo = copy.deepcopy(self.__info)
+                new_pos = (pos_actual[0] + 2, pos_actual[1])
+                if self.legal(new_pos):
+                    hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
+                    hijos.append(Estado(hijo, self.__coste + 2, self))
 
                 if debug:
                     print("movimiento a la derecha +2")
                     print("hijo: ", hijo)
 
-                hijos.append(Estado(hijo, self.__coste + 2, self))
-
         if pos_actual[1] > 0:
             # movimientos hacia arriba
             hijo = copy.deepcopy(self.__info)
-            hijo[nombre_rana] = (pos_actual[0], pos_actual[1] - 1)
+            new_pos = (pos_actual[0], pos_actual[1] - 1)
+            if self.legal(new_pos):
+                hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
+                hijos.append(Estado(hijo, self.__coste + 1, self))
 
             if debug:
                 print("movimiento hacia arriba +1")
                 print("hijo: ", hijo)
 
-            hijos.append(Estado(hijo, self.__coste + 1, self))
             if pos_actual[1] > 1:
-                hijo[nombre_rana] = (pos_actual[0], pos_actual[1] - 2)
+                hijo = copy.deepcopy(self.__info)
+                new_pos = (pos_actual[0], pos_actual[1] - 2)
+                if self.legal(new_pos):
+                    hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
+                    hijos.append(Estado(hijo, self.__coste + 2, self))
 
                 if debug:
                     print("movimiento hacia arriba +2")
                     print("hijo: ", hijo)
 
-                hijos.append(Estado(hijo, self.__coste + 2, self))
-
         if pos_actual[1] < self.__max_tablero:
             # movimientos hacia abajo
             hijo = copy.deepcopy(self.__info)
-            hijo[nombre_rana] = (pos_actual[0], pos_actual[1] + 1)
+            new_pos = (pos_actual[0], pos_actual[1] + 1)
+            if self.legal(new_pos):
+                hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
+                hijos.append(Estado(hijo, self.__coste + 1, self))
 
             if debug:
                 print("movimiento hacia abajo +1")
                 print("hijo: ", hijo)
 
-            hijos.append(Estado(hijo, self.__coste + 1, self))
             if pos_actual[1] < self.__max_tablero - 1:
-                hijo[nombre_rana] = (pos_actual[0], pos_actual[1] + 2)
+                hijo = copy.deepcopy(self.__info)
+                new_pos = (pos_actual[0], pos_actual[1] + 2)
+                if self.legal(new_pos):
+                    hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
+                    hijos.append(Estado(hijo, self.__coste + 2, self))
 
                 if debug:
                     print("movimiento hacia abajo +2")
                     print("hijo: ", hijo)
 
-                hijos.append(Estado(hijo, self.__coste + 2, self))
+        # for hijo in hijos:
+        #   print("hijo: ", hijo.info.get(ClauPercepcio.POSICIO))
 
         return hijos
 
