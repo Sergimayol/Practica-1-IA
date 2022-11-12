@@ -38,25 +38,32 @@ class Estado:
     def info(self):
         return self.__info
 
-    def es_meta(self, nombre_rana: str) -> bool:
-        return self.__info.get(ClauPercepcio.POSICIO).get(
-            nombre_rana
-        ) == self.__info.get(ClauPercepcio.OLOR)
+    def es_meta(self) -> bool:
+        # TODO: comprobar si la rana esta en la meta
+        # la implementación actual es para hacer pruebas
+        return (
+            self.__info.get(ClauPercepcio.POSICIO).get("Miquel")
+            == self[ClauPercepcio.OLOR]
+        )
 
-    @property
+    def calcula_heuristica(self):
+        """Método que calcula la heurística del estado pasado por parámetro.
+
+        Args:
+            estado (Estado): Estado del que se quiere calcular la heurística.
+
+        Returns:
+            int: Valor de la heurística.
+        """
+        
+        resultado = 0
+        resultado += abs(self.__info.get(ClauPercepcio.POSICIO).get("Miquel") - self[ClauPercepcio.OLOR])
+        #Habría que sumar el peso también
+        return resultado
+
+
     def padre(self):
         return self.__padre
-
-    @padre.setter
-    def padre(self, value):
-        self.__padre = value
-
-    def __getitem__(self, key):
-        return self.__info[key]
-
-    def __setitem__(self, key, value):
-        print("llave", key)
-        self.__info[key] = value
 
     def __str__(self) -> str:
         return str(self.__info)
@@ -179,9 +186,5 @@ class Estado:
                 if debug:
                     print("movimiento hacia abajo +2")
                     print("hijo: ", hijo)
-
-        if print_hijos:
-            for hijo in hijos:
-                print("hijo: ", hijo.info.get(ClauPercepcio.POSICIO))
 
         return hijos
