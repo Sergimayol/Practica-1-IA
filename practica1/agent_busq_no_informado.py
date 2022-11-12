@@ -7,43 +7,53 @@ from practica1 import entorn as entorn_practica1
 class RanaBusquedaNoInformada(Rana):
     def __init__(self, *args, **kwargs):
         super(Rana, self).__init__(*args, **kwargs)
-        self.abiertos = None
-        self.cerrados = None
-        self.acciones = None
+        self.__abiertos = None
+        self.__cerrados = None
+        self.__acciones = None
 
     def _buscar(self, estado: Estado):
-        self.abiertos = []
-        self.cerrados = set()
-        self.abiertos.append(estado)
-        actual = None
-        while len(self.abiertos) > 0:
-            actual = self.abiertos[0]
-            self.abiertos = self.abiertos[1:]
+        """Método que implementa el algoritmo de búsqueda no informada. Este método
+        implementa el algoritmo de búsqueda por profundidad.
 
-            if actual in self.cerrados:
+        Args:
+            estado (Estado): Estado en el que se encuentra la rana.
+        """
+        self.__abiertos = []
+        self.__cerrados = set()
+
+        self.__abiertos.append(estado)
+        estado_actual: Estado = None
+        while len(self.__abiertos) > 0:
+            estado_actual = self.__abiertos.pop()
+            if estado_actual in self.__cerrados:
                 continue
-            estados_hijos = actual.generar_hijos()
 
-            if actual.es_meta():
+            if estado_actual.es_meta("Miquel"):
                 break
 
-            for estat_final in estados_hijos:
-                self.abiertos.append(estat_final)
+            # Cambiar el nombre rana dinámico
+            estados_hijos = estado_actual.generar_hijos("Miquel")
 
-            self.cerrados.add(actual)
-        if actual is None:
-            raise ValueError("Error al buscar")
+            for estado_hijo in estados_hijos:
+                self.__abiertos.append(estado_hijo)
 
-        if actual.es_meta():
+            self.__cerrados.add(estado_actual)
+
+        if estado_actual is None:
+            raise ValueError("Error imposible")
+
+        if estado_actual.es_meta("Miquel"):
             acciones = []
-            iterador = actual
-
-            while iterador.padre() is not None:
-                padre, accion = iterador.padre()
+            iterador = estado_actual
+            while iterador.padre is not None:
+                padre, accion = iterador.padre
                 acciones.append(accion)
                 iterador = padre
-            self.acciones = acciones
+
+            self.__acciones = acciones
             return True
+
+        return False
 
     def actua(
         self, percep: entorn.Percepcio
@@ -51,8 +61,11 @@ class RanaBusquedaNoInformada(Rana):
         # Estado inicial de la rana
         estado_inicial = Estado(percep.to_dict(), 0, padre=None)
 
-        ranas = estado_inicial.get_frog_names()
-        for rana in ranas:
-            estado_inicial.generar_hijos(rana)
+        if self.__acciones is None:
+            self.__acciones = self._buscar(estado_inicial)
+            print("Lista de acciones: ", self.__acciones)
 
-        return entorn_practica1.AccionsRana.ESPERAR
+        if len(self.__acciones) == 0:
+            return entorn_practica1.AccionsRana.ESPERAR
+
+        return entorn_practica1.AccionsRana.BOTAR, self.__acciones.pop()
