@@ -11,7 +11,7 @@ class RanaBusquedaNoInformada(Rana):
         self.__cerrados = None
         self.__acciones = None
 
-    def _buscar(self, estado: Estado):
+    def _buscar(self, estado: Estado, profundidad: int = 5):
         """Método que implementa el algoritmo de búsqueda no informada. Este método
         implementa el algoritmo de búsqueda por profundidad.
 
@@ -23,7 +23,8 @@ class RanaBusquedaNoInformada(Rana):
 
         self.__abiertos.append(estado)
         estado_actual: Estado = None
-        while len(self.__abiertos) > 0:
+        profundidad_actual = profundidad
+        while len(self.__abiertos) > 0 and profundidad_actual >= 0:
             estado_actual = self.__abiertos.pop()
             if estado_actual in self.__cerrados:
                 continue
@@ -38,6 +39,7 @@ class RanaBusquedaNoInformada(Rana):
                 self.__abiertos.append(estado_hijo)
 
             self.__cerrados.add(estado_actual)
+            profundidad_actual -= 1
 
         if estado_actual is None:
             raise ValueError("Error imposible")
@@ -52,7 +54,14 @@ class RanaBusquedaNoInformada(Rana):
 
             self.__acciones = acciones
             return True
+        acciones = []
+        iterador = estado_actual
+        while iterador.padre is not None:
+            padre, accion = iterador.padre
+            acciones.append(accion)
+            iterador = padre
 
+        self.__acciones = acciones
         return False
 
     def actua(
@@ -62,7 +71,7 @@ class RanaBusquedaNoInformada(Rana):
         estado_inicial = Estado(percep.to_dict(), 0, padre=None)
 
         if self.__acciones is None:
-            self.__acciones = self._buscar(estado_inicial)
+            self._buscar(estado_inicial)
             print("Lista de acciones: ", self.__acciones)
 
         if len(self.__acciones) == 0:
