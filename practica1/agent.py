@@ -38,13 +38,10 @@ class Estado:
     def info(self):
         return self.__info
 
-    def es_meta(self) -> bool:
-        # TODO: comprobar si la rana esta en la meta
-        # la implementación actual es para hacer pruebas
-        return (
-            self.__info.get(ClauPercepcio.POSICIO).get("Miquel")
-            == self[ClauPercepcio.OLOR]
-        )
+    def es_meta(self, nombre_rana: str) -> bool:
+        return self.__info.get(ClauPercepcio.POSICIO).get(
+            nombre_rana
+        ) == self.__info.get(ClauPercepcio.OLOR)
 
     def padre(self):
         return self.__padre
