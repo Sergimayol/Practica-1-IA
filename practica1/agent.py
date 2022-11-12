@@ -57,7 +57,7 @@ class Estado:
         """
         
         resultado = 0
-        resultado += abs(self.__info.get(ClauPercepcio.POSICIO).get("Miquel") - self[ClauPercepcio.OLOR])
+        resultado += abs(self.__info.get(ClauPercepcio.POSICIO).get("Miquel") - self.__info.get(ClauPercepcio.OLOR))
         #Habría que sumar el peso también
         return resultado
 
