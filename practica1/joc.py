@@ -13,11 +13,66 @@ class TipusCas(enum.Enum):
     PARET = 1
 
 
+class Rana(agent_lib.Agent):
+    random__used = set()
+
+    def __init__(self, nom: str, path_img: str = "../assets/rana/rana.png"):
+        super().__init__(long_memoria=1)
+
+        posicio = random.randint(0, 7), random.randint(0, 7)
+
+        while posicio in Laberint.PARETS or posicio in Rana.random__used:
+            posicio = random.randint(0, 7), random.randint(0, 7)
+
+        Rana.random__used.add(posicio)
+        self.__posicio = posicio
+        self.__botant = 0
+        self.__dir_bot = None
+        self.__nom = nom
+        self.__path_img = path_img
+
+    def pinta(self, display):
+        pass
+
+    def actua(
+            self, percep: entorn.Percepcio
+    ) -> entorn.Accio | tuple[entorn.Accio, object]:
+        return AccionsRana.ESPERAR
+
+    @property
+    def path_img(self) -> str:
+        return self.__path_img
+
+    @property
+    def nom(self):
+        return self.__nom
+
+    @property
+    def posicio(self):
+        return self.__posicio
+
+    @posicio.setter
+    def posicio(self, val: tuple[int, int]):
+        self.__posicio = val
+
+    def start_bot(self, dir_bot):
+        self.__dir_bot = dir_bot
+        self.__botant = 2
+
+    def fer_bot(self):
+        self.__botant -= 1
+
+        return self.__dir_bot
+
+    def esta_botant(self) -> bool:
+        return self.__botant > 0
+
+
 class Casella:
     def __init__(
             self,
             tipus: TipusCas = TipusCas.LLIURE,
-            agent: agent_lib.Agent = None,
+            agent: Rana = None,
             menjar: bool = False,
     ):
         self.__tipus = tipus
@@ -64,7 +119,7 @@ class Casella:
             2 if self.__tipus is TipusCas.LLIURE else 0,
         )
         if self.__agent is not None:
-            img = pygame.image.load("../assets/rana/rana.png")
+            img = pygame.image.load(self.__agent.path_img)
             img = pygame.transform.scale(img, (100, 100))
             window.blit(img, (x * 100, y * 100))
 
@@ -74,56 +129,6 @@ class Casella:
             window.blit(img, (x * 100, y * 100))
 
 
-class Rana(agent_lib.Agent):
-    def __init__(self, nom: str):
-        super().__init__(long_memoria=1)
-
-        posicio = random.randint(0, 7), random.randint(0, 7)
-
-        while posicio in Laberint.PARET:
-            posicio = random.randint(0, 7), random.randint(0, 7)
-
-        self.__posicio = posicio
-        self.__botant = 0
-        self.__dir_bot = None
-        self.__nom = nom
-
-    def pinta(self, display):
-        pass
-
-    def actua(
-            self, percep: entorn.Percepcio
-    ) -> entorn.Accio | tuple[entorn.Accio, object]:
-        return AccionsRana.ESPERAR
-
-    @property
-    def nom(self):
-        return self.__nom
-
-    @property
-    def posicio(self):
-        return self.__posicio
-
-    def get_rana(self):
-        return self.__posicio
-        
-    @posicio.setter
-    def posicio(self, val: tuple[int, int]):
-        self.__posicio = val
-
-    def start_bot(self, dir_bot):
-        self.__dir_bot = dir_bot
-        self.__botant = 3
-
-    def fer_bot(self):
-        self.__botant -= 1
-
-        return self.__dir_bot
-
-    def esta_botant(self) -> bool:
-        return self.__botant > 0
-
-
 class Laberint(joc.Joc):
     MOVS = {
         Direccio.BAIX: (0, 1),
@@ -131,18 +136,20 @@ class Laberint(joc.Joc):
         Direccio.DALT: (0, -1),
         Direccio.ESQUERRE: (-1, 0),
     }
-    PARET = [(2, 4), (3, 4), (4, 4), (4, 3), (4, 2), (6, 6), (7, 6)]
+    PARETS = [(2, 4), (3, 4), (4, 4), (4, 3), (4, 2), (6, 6), (7, 6)]
 
-    def __init__(self, agents: list[Rana], parets=False):
+    def __init__(self, agents: list[Rana], parets=False, mida_taulell: tuple[int, int] = (8, 8)):
         super(Laberint, self).__init__((800, 800), agents, title="Pràctica 1")
 
         self.__caselles = []
+        self.__mida_taulell = mida_taulell
+        self.__fer_parets = parets
 
-        for x in range(8):
+        for x in range(mida_taulell[0]):
             aux = []
-            for y in range(8):
+            for y in range(mida_taulell[1]):
                 tipus = TipusCas.LLIURE
-                if (x, y) in Laberint.PARET and parets:
+                if (x, y) in Laberint.PARETS and parets:
                     tipus = TipusCas.PARET
                 aux.append(Casella(tipus))
             self.__caselles.append(aux)
@@ -154,9 +161,6 @@ class Laberint(joc.Joc):
 
         self.__pos_menjar = self.set_menjar()
 
-    def get_pizza(self):
-        return self.__pos_menjar
-        
     @property
     def posicio_agents(self):
         posicions = {}
@@ -188,7 +192,7 @@ class Laberint(joc.Joc):
             raise ValueError(f"Acció no existent en aquest joc: {accio}")
 
         if accio is not AccionsRana.ESPERAR and (
-                params is None or len(params) != 1 or params[0] not in Direccio
+                params is None or params not in Direccio
         ):
             raise ValueError("Paràmetres incorrectes")
 
@@ -200,24 +204,22 @@ class Laberint(joc.Joc):
                     oc_x, oc_y = agent_actual.posicio
                     nc_x, nc_y = Laberint._calcula_casella((oc_x, oc_y), direccio, 2)
             else:
-                agent_actual.start_bot(params[0])
+                agent_actual.start_bot(params)
         elif accio is AccionsRana.MOURE:
             oc_x, oc_y = agent_actual.posicio
-            nc_x, nc_y = Laberint._calcula_casella((oc_x, oc_y), params[0], 1)
+            nc_x, nc_y = Laberint._calcula_casella((oc_x, oc_y), params, 1)
 
         if nc_x is not None:
             if (not (8 > nc_y >= 0)) or (not (8 > nc_x >= 0)):
                 raise agent_lib.Trampes()
 
-            if not self.__caselles[nc_x][nc_y].is_accessible():
-                raise agent_lib.Trampes()
+            if self.__caselles[nc_x][nc_y].is_accessible():
+                self.__caselles[oc_x][oc_y].pop_agent()
+                ha_menjat = self.__caselles[nc_x][nc_y].put_agent(agent_actual)
+                agent_actual.posicio = (nc_x, nc_y)
 
-            self.__caselles[oc_x][oc_y].pop_agent()
-            ha_menjat = self.__caselles[nc_x][nc_y].put_agent(agent_actual)
-            agent_actual.posicio = (nc_x, nc_y)
-
-            if ha_menjat:
-                print(f"Agent {agent_actual.nom} ha guanyat")
+                if ha_menjat:
+                    print(f"Agent {agent_actual.nom} ha guanyat")
 
     def _draw(self) -> None:
         super(Laberint, self)._draw()
@@ -229,10 +231,15 @@ class Laberint(joc.Joc):
                 self.__caselles[x][y].draw(window, x, y)
 
     def percepcio(self) -> entorn.Percepcio:
+        percep_dict = {
+            ClauPercepcio.OLOR: self.__pos_menjar,
+            ClauPercepcio.POSICIO: self.posicio_agents,
+            ClauPercepcio.MIDA_TAULELL: self.__mida_taulell
+        }
+
+        if self.__fer_parets:
+            percep_dict[ClauPercepcio.PARETS] = self.PARETS
+
         return entorn.Percepcio(
-            {
-                ClauPercepcio.OLOR: self.__pos_menjar,
-                ClauPercepcio.POSICIO: self.posicio_agents,
-                ClauPercepcio.PARETS: self.PARET,
-            }
+            percep_dict
         )
