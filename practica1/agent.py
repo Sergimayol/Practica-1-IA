@@ -43,8 +43,20 @@ class Estado:
             nombre_rana
         ) == self.__info.get(ClauPercepcio.OLOR)
 
+    @property
     def padre(self):
         return self.__padre
+
+    @padre.setter
+    def padre(self, value):
+        self.__padre = value
+
+    def __getitem__(self, key):
+        return self.__info[key]
+
+    def __setitem__(self, key, value):
+        print("llave", key)
+        self.__info[key] = value
 
     def __str__(self) -> str:
         return str(self.__info)
