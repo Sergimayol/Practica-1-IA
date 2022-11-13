@@ -6,110 +6,77 @@ from practica1 import entorn as entorn_practica1
 
 class RanaBusquedaNoInformada(Rana):
     def __init__(self, *args, **kwargs):
+        super(Rana, self).__init__(*args, **kwargs)
         self.__abiertos = None
         self.__cerrados = None
         self.__acciones = None
-        self.__turno = 0
 
-    def pinta(self, display):
-        pass
+    def _buscar(self, estado: Estado, profundidad: int = 22):
+        """Método que implementa el algoritmo de búsqueda no informada. Este método
+        implementa el algoritmo de búsqueda por profundidad.
 
-    def _buscar(self, estat: Estado):
-        #Lista de estados abiertos
+        Args:
+            estado (Estado): Estado en el que se encuentra la rana.
+        """
         self.__abiertos = []
-        #Conjunto de estados cerrados
         self.__cerrados = set()
-        #Añadimos el estado inicial a la lista de abiertos
-        self.__abiertos.append(estat)
-        #Declaramos el estado actual como None
-        estado_actual = None
-        #Mientras la lista de abiertos no esté vacía
-        while len(self.__abiertos) > 0:
-            #El estado actual es el primer elemento de la lista de abiertos
-            estado_actual = self.__abiertos[0]
-            #Los estados abiertos son desde el segundo elemento hasta el final
-            self.__abiertos = self.__abiertos[1:]
 
-            #Si el estado actual está en la lista de cerrados, no hacemos nada
+        self.__abiertos.append(estado)
+        estado_actual: Estado = None
+        profundidad_actual = profundidad
+
+        while len(self.__abiertos) > 0:
+            estado_actual = self.__abiertos.pop()
+
             if estado_actual in self.__cerrados:
                 continue
-            
-            #Si el estado actual es válido
-            if not estado_actual.es_valid():
-                #Añadimos el estado actual a la lista de cerrados
-                self.__cerrados.add(estado_actual)
-                continue
-            
-            #Se generan estados hijos del estado actual
-            estados_hijos = estado_actual.genera_fills()
 
-            #Si el estado actual es meta salir del bucle
-            if estado_actual.es_meta():
+            if estado_actual.es_meta("Miquel"):
                 break
-            
-            #Añadimos los estados hijos a la lista de abiertos
+
+            if profundidad_actual > 0:
+                profundidad_actual -= 1
+                # Cambiar el nombre rana dinámico
+                estados_hijos = estado_actual.generar_hijos("Miquel")
+
             for estado_hijo in estados_hijos:
                 self.__abiertos.append(estado_hijo)
 
-            #Añadimos el estado actual a la lista de cerrados
             self.__cerrados.add(estado_actual)
 
-        #Si el estado actual no existe: ERROR
         if estado_actual is None:
-            raise ValueError("Error impossible")
+            raise ValueError("Error imposible")
 
-        #Si el estado actual es meta
-        if estado_actual.es_meta():
-            #Se genera la lista de acciones
-            accions = []
-            #Copiamos el estado actual en un iterador
+        if estado_actual.es_meta("Miquel"):
+            acciones = []
             iterador = estado_actual
-            
-            #Mientras el iterador padre no sea None
+
             while iterador.padre is not None:
+                accion = iterador.padre
 
-                padre, accio = iterador.padre
-                #Añadimos la acción a la lista de acciones
-                accions.append(accio)
-                #El iterador es el padre
-                iterador = padre
-            self.__acciones = accions
+                acciones.append(accion[0].get("Miquel"))
+                iterador = iterador.padre
+
+            acciones.append(iterador.padre[0].get("Miquel"))
+            self.__acciones = acciones
             return True
-        else:
-            return False
 
+        self.__acciones = []
+        return False
 
     def actua(
-            self, percep: entorn.Percepcio
+        self, percep: entorn.Percepcio
     ) -> entorn.Accio | tuple[entorn.Accio, object]:
-            # Guardamos las percepciones
-            percepciones = percep.to_dict()
-            # Guardamos las claves de las percepciones
-            clave = list(percepciones.keys())
-            # Pasamos al estado el las claves de las percepciones
-            estado = Estado(percep[clave[0]],percep[clave[1]], percep[clave[2]])
+        # Estado inicial de la rana
+        estado_inicial = Estado(percep.to_dict(), 0, padre=None)
 
-            #Si no hay acciones
-            if self.__acciones is None:
-                #Buscamos acciones para el estado
-                self._buscar(estado)
-            
-            #Si hay acciones
-            if self.__acciones:
-                #Si el turno es mayor que 0
-                if(self.__turno > 0):
-                    #Restar 1 al turno
-                    self.__turno -= 1
-                    #La rana ESPERA
-                    return entorn_practica1.AccionsRana.ESPERAR
-                else: 
-                    #La acción es la última de la lista de acciones
-                    accion=self.__acciones.pop()
-                    #Si la acción es BOTAR
-                    if(accion[0] == entorn_practica1.AccionsRana.BOTAR):
-                        #Sumar 2 al turno
-                        self.__turno=2
-                    #Retornar acción y dirección
-                    return accion[0], accion[1]
-            else:
-                return entorn_practica1.AccionsRana.ESPERAR
+        if self.__acciones is None:
+            self._buscar(estado_inicial)
+            print("Acciones: ", self.__acciones)
+
+        if len(self.__acciones) == 0:
+            return entorn_practica1.AccionsRana.ESPERAR
+
+        accion = self.__acciones.pop()
+
+        return entorn_practica1.AccionsRana.BOTAR, accion

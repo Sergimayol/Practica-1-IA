@@ -6,9 +6,9 @@ ClauPercepcio:
     PARETS = 2
 """
 from ia_2022 import entorn
-from practica1 import joc, entorn as entorn_practica1
+from practica1 import joc
 import copy
-from practica1.entorn import ClauPercepcio, AccionsRana, Direccio
+from practica1.entorn import ClauPercepcio
 
 
 class Rana(joc.Rana):
@@ -38,35 +38,45 @@ class Estado:
     def info(self):
         return self.__info
 
-    def es_meta(self) -> bool:
-        # TODO: comprobar si la rana esta en la meta
-        # la implementación actual es para hacer pruebas
-        return (
-            self.__info.get(ClauPercepcio.POSICIO).get("Miquel")
-            == self[ClauPercepcio.OLOR]
-        )
+    def es_meta(self, nombre_rana: str) -> bool:
+        return self.__info.get(ClauPercepcio.POSICIO).get(
+            nombre_rana
+        ) == self.__info.get(ClauPercepcio.OLOR)
 
-    def calcula_heuristica(self):
-        """Método que calcula la heurística del estado pasado por parámetro.
-
-        Args:
-            estado (Estado): Estado del que se quiere calcular la heurística.
-
-        Returns:
-            int: Valor de la heurística.
-        """
-        
-        resultado = 0
-        resultado += abs(self.__info.get(ClauPercepcio.POSICIO).get("Miquel") - self.__info.get(ClauPercepcio.OLOR))
-        #Habría que sumar el peso también
-        return resultado
-
-
+    @property
     def padre(self):
         return self.__padre
 
+    @padre.setter
+    def padre(self, value):
+        self.__padre = value
+
+    def __getitem__(self, key):
+        if key == 0:
+            return self.__info.get(ClauPercepcio.POSICIO)
+        elif key == 1:
+            return self.__info.get(ClauPercepcio.OLOR)
+        elif key == 2:
+            return self.__info.get(ClauPercepcio.PARETS)
+
+    def __setitem__(self, key, value):
+        self.__info[key] = value
+
     def __str__(self) -> str:
         return str(self.__info)
+
+    def __eq__(self, __o: object) -> bool:
+        return self.__info.get(ClauPercepcio.POSICIO) == __o.info.get(
+            ClauPercepcio.POSICIO
+        )
+
+    def calcular_heuritica(self, nombre_rana) -> int:
+        # obtener la posicion de la rana
+        pos_rana = self.__info.get(ClauPercepcio.POSICIO).get(nombre_rana)
+        # obtener la posicion del olor
+        pos_olor = self.__info.get(ClauPercepcio.OLOR)
+        # calcular la distancia de Manhattan
+        return abs(pos_rana[0] - pos_olor[0]) + abs(pos_rana[1] - pos_olor[1])
 
     def get_frog_names(self) -> list[str]:
         return list(self.__info.get(ClauPercepcio.POSICIO).keys())
@@ -186,5 +196,9 @@ class Estado:
                 if debug:
                     print("movimiento hacia abajo +2")
                     print("hijo: ", hijo)
+
+        if print_hijos:
+            for hijo in hijos:
+                print("hijo: ", hijo.info.get(ClauPercepcio.POSICIO))
 
         return hijos
