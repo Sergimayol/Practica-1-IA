@@ -57,7 +57,7 @@ class RanaBusquedaNoInformada(Rana):
                 acciones.append(accion[0].get("Miquel"))
                 iterador = iterador.padre
 
-            acciones.append(iterador.padre[0].get("Miquel"))
+            # acciones.append(iterador.padre[0].get("Miquel"))
             self.__acciones = acciones
             return True
 
