@@ -119,7 +119,6 @@ class Estado:
 
         # pos 0 = x, pos 1 = y (empiezan en 0)
         pos_actual = self.__info.get(ClauPercepcio.POSICIO).get(nombre_rana)
-        print("Posición padre:", pos_actual)
         if pos_actual[0] > 0:
             # movimientos a la izquierda
             new_pos = (pos_actual[0] - 1, pos_actual[1])
@@ -222,7 +221,6 @@ class Estado:
 
             if estado_hijo is not None:
                 hijos.append(estado_hijo)
-
         return hijos
     
     def puntuacion(self, nombre_rana: str) -> int:
@@ -231,9 +229,10 @@ class Estado:
         Returns:
             _int_: puntuacion del estado
         """
-        return self.__coste if self.es_meta(nombre_rana) else None
-
-            
+        suma = 0
+        for i in range(2):
+            suma = abs(self.get_posicion(nombre_rana)[i] - self.get_comida()[i])
+        return suma
 
 
 class RanaMiniMax(Rana):
@@ -246,7 +245,7 @@ class RanaMiniMax(Rana):
     def pinta(self, display):
         pass
 
-    def busqueda_minimax(self, estado: Estado, turno: bool = True) -> int:
+    def busqueda_minimax(self, estado: Estado, turno: bool, recursividad:int):
         """Algoritmo de busqueda minimax
         Min -> False
         Args:
@@ -255,21 +254,20 @@ class RanaMiniMax(Rana):
         Returns:
             int: Valor de la mejor accion
         """
-        puntuacion = estado.puntuacion('Miquel')
-        print("Puntuacion", puntuacion)
-        if puntuacion:
-            return puntuacion
-
-        puntuacion_hijos = [
-            self.busqueda_minimax(hijo, not turno) for hijo in estado.generar_hijos('Miquel')
-        ]
-        
-        return max(puntuacion_hijos) if turno else min(puntuacion_hijos)
+        puntuacion = estado.puntuacion(self.nom)
+        if recursividad == 2  or estado.es_meta(self.nom):
+            return puntuacion, estado
+        #[print(self.minimax(estat_fill, not turno_max, recursividad + 1)) for estat_fill in estat.genera_fills()]
+        point_fills = [self.busqueda_minimax(estat_fill, not turno, recursividad+1) for estat_fill in estado.generar_hijos(self.nom)]
+        #print(punto)
+        if turno:
+            return max(point_fills)
+        else:
+            return min(point_fills)
 
     def actua(
         self, percep: entorn.Percepcio
     ) -> entorn.Accio | tuple[entorn.Accio, object]:
-
         # Estado inicial de la rana
         estado_inicial = Estado(
             percep.to_dict(),
@@ -278,32 +276,28 @@ class RanaMiniMax(Rana):
             accion=AccionsRana.ESPERAR,
             direccion=None,
         )
-
         if self.__acciones is None:
-            resultado = self.busqueda_minimax(estado_inicial, turno = True)
+            resultado = self.busqueda_minimax(estado_inicial, turno = True, recursividad=0)
             print("Resultado", resultado)
             print("Acciones: ", self.__acciones)
-        
-        if estado_inicial.es_meta("Miquel"):
+
+            iterador = resultado[1]
+            print("Iterador: ", iterador)
             acciones = []
-            iterador = estado_inicial
             acciones.append((iterador.get_accion(), iterador.get_direccion()))
             while iterador.padre is not None:
                 accion: Estado = iterador.padre
-
-                # accion, direccion
+                    # accion, direccion
                 acciones.append((accion.get_accion(), accion.get_direccion()))
-
                 iterador = iterador.padre
-
             self.__acciones = acciones
-            return True
 
         if self.__saltando > 0:
             self.__saltando -= 1
             return AccionsRana.ESPERAR
 
         accion = self.__acciones.pop()
+        #Se queda aquí, hay que hacer que entre en bucle para q me popee una acción cada vez
 
         if accion[1] is None:
             return accion[0]
