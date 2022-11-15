@@ -8,6 +8,7 @@ class ClauPercepcio(enum.Enum):
     OLOR = 1
     PARETS = 2
     MIDA_TAULELL = 3
+    
 
 class AccionsRana(entorn.Accio, enum.Enum):
     MOURE = 0

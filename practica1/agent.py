@@ -10,7 +10,6 @@ from practica1 import joc
 import copy
 from practica1.entorn import ClauPercepcio
 
-
 class Rana(joc.Rana):
     def __init__(self, *args, **kwargs):
         super(Rana, self).__init__(*args, **kwargs)
