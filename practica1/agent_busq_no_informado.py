@@ -79,14 +79,6 @@ class Estado:
             ClauPercepcio.POSICIO
         )
 
-    def calcular_heuritica(self, nombre_rana) -> int:
-        # obtener la posicion de la rana
-        pos_rana = self.__info.get(ClauPercepcio.POSICIO).get(nombre_rana)
-        # obtener la posicion del olor
-        pos_olor = self.__info.get(ClauPercepcio.OLOR)
-        # calcular la distancia de Manhattan
-        return abs(pos_rana[0] - pos_olor[0]) + abs(pos_rana[1] - pos_olor[1])
-
     def get_frog_names(self) -> list[str]:
         return list(self.__info.get(ClauPercepcio.POSICIO).keys())
 
