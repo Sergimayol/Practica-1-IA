@@ -6,6 +6,10 @@ import copy
 
 
 class Estado:
+    COSTE_MOVERSE = 1
+    COSTE_ESPERAR = 0.5
+    COSTE_SALTAR = 6
+
     def __init__(
         self,
         info: dict,
@@ -27,9 +31,6 @@ class Estado:
     def get_direccion(self) -> Direccio or None:
         return self.__direccion
 
-    def get_coste(self) -> int:
-        return self.__coste
-
     def get_accion(self) -> AccionsRana or None:
         return self.__accion
 
@@ -41,12 +42,6 @@ class Estado:
         return self.__info.get(ClauPercepcio.POSICIO).get(
             nombre_rana
         ) == self.__info.get(ClauPercepcio.OLOR)
-
-    def get_posicion(self, nombre_rana: str) -> tuple:
-        return self.__info.get(ClauPercepcio.POSICIO).get(nombre_rana)
-
-    def get_comida(self):
-        return self.__info.get(ClauPercepcio.OLOR)
 
     @property
     def padre(self):
@@ -68,12 +63,7 @@ class Estado:
         self.__info[key] = value
 
     def __str__(self) -> str:
-        return (
-            str(self.__info)
-            + f" coste: {self.__coste}"
-            + f" accion: {self.__accion}"
-            + f" direccion: {self.__direccion}"
-        )
+        return f"Estado: {self.__info}, Coste: {self.__coste}, Padre: {self.__padre}, Direccion: {self.__direccion}, Accion: {self.__accion}"
 
     def __eq__(self, __o: object) -> bool:
         return self.__info.get(ClauPercepcio.POSICIO) == __o.info.get(
@@ -114,22 +104,24 @@ class Estado:
         Returns:
             _list_: list de estados hijos generados
         """
-
         hijos = []
-
         # pos 0 = x, pos 1 = y (empiezan en 0)
         pos_actual = self.__info.get(ClauPercepcio.POSICIO).get(nombre_rana)
-        print("Posición padre:", pos_actual)
+
         if pos_actual[0] > 0:
             # movimientos a la izquierda
             new_pos = (pos_actual[0] - 1, pos_actual[1])
-            # Estado hijo a crear
-            estado_hijo: Estado = None
             if self.legal(new_pos):
                 hijo = copy.deepcopy(self.__info)
                 hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                estado_hijo = Estado(
-                    hijo, self.__coste + 1, self, Direccio.ESQUERRE, AccionsRana.MOURE
+                hijos.append(
+                    Estado(
+                        hijo,
+                        self.COSTE_MOVERSE,
+                        self,
+                        Direccio.ESQUERRE,
+                        AccionsRana.MOURE,
+                    )
                 )
 
             if pos_actual[0] > 1:
@@ -137,26 +129,30 @@ class Estado:
                 if self.legal(new_pos):
                     hijo = copy.deepcopy(self.__info)
                     hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                    estado_hijo = Estado(
-                        hijo,
-                        self.__coste + 2,
-                        self,
-                        Direccio.ESQUERRE,
-                        AccionsRana.BOTAR,
+                    hijos.append(
+                        Estado(
+                            hijo,
+                            self.COSTE_SALTAR,
+                            self,
+                            Direccio.ESQUERRE,
+                            AccionsRana.BOTAR,
+                        )
                     )
-            if estado_hijo is not None:
-                hijos.append(estado_hijo)
 
         if pos_actual[0] < self.__max_tablero:
             # movimientos a la derecha
             new_pos = (pos_actual[0] + 1, pos_actual[1])
-            # Estado hijo a crear
-            estado_hijo: Estado = None
             if self.legal(new_pos):
                 hijo = copy.deepcopy(self.__info)
                 hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                estado_hijo = Estado(
-                    hijo, self.__coste + 1, self, Direccio.DRETA, AccionsRana.MOURE
+                hijos.append(
+                    Estado(
+                        hijo,
+                        self.COSTE_MOVERSE,
+                        self,
+                        Direccio.DRETA,
+                        AccionsRana.MOURE,
+                    )
                 )
 
             if pos_actual[0] < self.__max_tablero - 1:
@@ -164,27 +160,26 @@ class Estado:
                 if self.legal(new_pos):
                     hijo = copy.deepcopy(self.__info)
                     hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                    estado_hijo = Estado(
-                        hijo,
-                        self.__coste + 2,
-                        self,
-                        Direccio.DRETA,
-                        AccionsRana.BOTAR,
+                    hijos.append(
+                        Estado(
+                            hijo,
+                            self.COSTE_SALTAR,
+                            self,
+                            Direccio.DRETA,
+                            AccionsRana.BOTAR,
+                        )
                     )
-
-            if estado_hijo is not None:
-                hijos.append(estado_hijo)
 
         if pos_actual[1] > 0:
             # movimientos hacia arriba
             new_pos = (pos_actual[0], pos_actual[1] - 1)
-            # Estado hijo a crear
-            estado_hijo: Estado = None
             if self.legal(new_pos):
                 hijo = copy.deepcopy(self.__info)
                 hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                estado_hijo = Estado(
-                    hijo, self.__coste + 1, self, Direccio.DALT, AccionsRana.MOURE
+                hijos.append(
+                    Estado(
+                        hijo, self.COSTE_MOVERSE, self, Direccio.DALT, AccionsRana.MOURE
+                    )
                 )
 
             if pos_actual[1] > 1:
@@ -192,23 +187,26 @@ class Estado:
                 if self.legal(new_pos):
                     hijo = copy.deepcopy(self.__info)
                     hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                    estado_hijo = Estado(
-                        hijo, self.__coste + 2, self, Direccio.DALT, AccionsRana.BOTAR
+                    hijos.append(
+                        Estado(
+                            hijo,
+                            self.COSTE_SALTAR,
+                            self,
+                            Direccio.DALT,
+                            AccionsRana.BOTAR,
+                        )
                     )
-
-            if estado_hijo is not None:
-                hijos.append(estado_hijo)
 
         if pos_actual[1] < self.__max_tablero:
             # movimientos hacia abajo
             new_pos = (pos_actual[0], pos_actual[1] + 1)
-            # Estado hijo a crear
-            estado_hijo: Estado = None
             if self.legal(new_pos):
                 hijo = copy.deepcopy(self.__info)
                 hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                estado_hijo = Estado(
-                    hijo, self.__coste + 1, self, Direccio.BAIX, AccionsRana.MOURE
+                hijos.append(
+                    Estado(
+                        hijo, self.COSTE_MOVERSE, self, Direccio.BAIX, AccionsRana.MOURE
+                    )
                 )
 
             if pos_actual[1] < self.__max_tablero - 1:
@@ -216,12 +214,15 @@ class Estado:
                 if self.legal(new_pos):
                     hijo = copy.deepcopy(self.__info)
                     hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                    estado_hijo = Estado(
-                        hijo, self.__coste + 2, self, Direccio.BAIX, AccionsRana.BOTAR
+                    hijos.append(
+                        Estado(
+                            hijo,
+                            self.COSTE_SALTAR,
+                            self,
+                            Direccio.BAIX,
+                            AccionsRana.BOTAR,
+                        )
                     )
-
-            if estado_hijo is not None:
-                hijos.append(estado_hijo)
 
         return hijos
 
@@ -234,11 +235,11 @@ class RanaEstrella(Rana):
         self.__acciones = None
         self.__saltando = 0
 
-    def _buscar(self, estado: Estado):
+    def _buscar(self, estado: Estado, nombre_rana: str) -> bool:
         self.__abiertos = PriorityQueue()
         self.__cerrados = set()
 
-        self.__abiertos.put((estado.calcular_heuritica("Miquel"), estado))
+        self.__abiertos.put((estado.calcular_heuritica(nombre_rana), estado))
         estado_actual: Estado = None
 
         while not self.__abiertos.empty():
@@ -247,19 +248,19 @@ class RanaEstrella(Rana):
             if estado_actual in self.__cerrados:
                 continue
 
-            if estado_actual.es_meta("Miquel"):
+            if estado_actual.es_meta(nombre_rana):
                 break
 
-            estados_hijos = estado_actual.generar_hijos("Miquel")
+            estados_hijos = estado_actual.generar_hijos(nombre_rana)
 
             for estado_hijo in estados_hijos:
                 self.__abiertos.put(
-                    (estado_hijo.calcular_heuritica("Miquel"), estado_hijo)
+                    (estado_hijo.calcular_heuritica(nombre_rana), estado_hijo)
                 )
 
             self.__cerrados.add(estado_actual)
 
-        if estado_actual.es_meta("Miquel"):
+        if estado_actual.es_meta(nombre_rana):
             acciones = []
             iterador = estado_actual
 
@@ -290,8 +291,7 @@ class RanaEstrella(Rana):
         )
 
         if self.__acciones is None:
-            self._buscar(estado_inicial)
-            print("Acciones: ", self.__acciones)
+            self._buscar(estado_inicial, "Miquel")
 
         if len(self.__acciones) == 0:
             return AccionsRana.ESPERAR
