@@ -13,9 +13,11 @@ from practica1 import entorn as entorn_practica1
 
 
 def main():
-    rana = agent_busq_no_informado.RanaBusquedaNoInformada("Miquel")
-    rana2 = agent_busq_no_informado.RanaBusquedaNoInformada("Pep")
-    lab = joc.Laberint([rana], parets=True)
+
+    # rana = agent_busq_no_informado.RanaBusquedaNoInformada("Miquel")
+    rana = agent_minimax.RanaMiniMax("Miquel")
+    rana2 = agent_minimax.RanaMiniMax("Pep")
+    lab = joc.Laberint([rana, rana2], parets=True)
     lab.comencar()
 
 
