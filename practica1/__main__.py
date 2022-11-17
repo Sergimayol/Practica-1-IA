@@ -18,7 +18,8 @@ from practica1 import joc
 def main():
     # rana = agent_busq_no_informado.RanaBusquedaNoInformada("Miquel")
     # rana = agent_a_estrella.RanaEstrella("Miquel")
-    rana = agent_genetico.RanaGenetica("Miquel")
+    rana = agent_minimax.RanaMiniMax("Miquel")
+    # rana = agent_genetico.RanaGenetica("Miquel")
     lab = joc.Laberint([rana], parets=True)
     lab.comencar()
 
