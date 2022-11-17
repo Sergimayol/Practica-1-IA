@@ -224,37 +224,18 @@ class Estado:
                 hijos.append(estado_hijo)
         return hijos
 
-    def puntuacion(self, nombre_rana: str) -> int:
-        """
-        Esta funcion calcula la puntuacion de un estado.
-        Returns:
-            _int_: puntuacion del estado
-        """
-        puntuacionMAX = 0
-        puntuacionMIN = 0
-        if nombre_rana == "Miquel":
 
-            print("Estoy en Miquel")
-            # obtener la posicion de la rana
-            pos_rana = self.__info.get(ClauPercepcio.POSICIO).get(nombre_rana)
-            # obtener la posicion del olor
-            pos_olor = self.__info.get(ClauPercepcio.OLOR)
-            # calcular la distancia de Manhattan y añadir el coste
-            puntuacionMAX = abs(pos_rana[0] - pos_olor[0]) + abs(
-                pos_rana[1] - pos_olor[1]
-            )
-            print("PuntuacionMAX", puntuacionMAX)
-            return puntuacionMAX
+    def punto(self, nombre_rana):
+        pos_comida = self.get_comida()
+        pos_rana = self.get_posicion(nombre_rana)
+        punto = abs(pos_comida[0]-pos_rana[0]) + abs(pos_comida[1]-pos_rana[1])
+        return punto
+
+    def puntuacion(self, nombre_rana: str) -> int:
+        if nombre_rana == 'Miquel':
+            return self.punto('Pep')-self.punto('Miquel')
         else:
-            print("Estoy en PEP")
-            pos_rana = self.__info.get(ClauPercepcio.POSICIO).get(nombre_rana)
-            # obtener la posicion del olor
-            pos_olor = self.__info.get(ClauPercepcio.OLOR)
-            # calcular la distancia de Manhattan y añadir el coste
-            puntuacionMIN = -abs(pos_rana[0] - pos_olor[0]) + abs(
-                pos_rana[1] - pos_olor[1]
-            )
-            return puntuacionMIN
+            return self.punto('Miquel')-self.punto('Pep')
 
 
 class RanaMiniMax(Rana):
@@ -276,7 +257,6 @@ class RanaMiniMax(Rana):
             int: Valor de la mejor accion
         """
         puntuacion = estado.puntuacion(self.nom)
-        print("Puntuacion", puntuacion)
         if recursividad == 2 or estado.es_meta(self.nom):
             return puntuacion, estado
         # [print(self.minimax(estat_fill, not turno_max, recursividad + 1)) for estat_fill in estat.genera_fills()]
@@ -298,35 +278,33 @@ class RanaMiniMax(Rana):
             percep.to_dict(),
             0,
             padre=None,
-            accion=AccionsRana.ESPERAR,
             direccion=None,
+            accion=AccionsRana.ESPERAR,
         )
+        # Devuelve puntuacion y estado
         resultado = self.busqueda_minimax(estado_inicial, turno=True, recursividad=0)
-        print("Resultado", resultado)
+        meta = 0
         iterador = resultado[1]
-        acciones = []
-        # Estado final
-        acciones.append((iterador.get_accion(), iterador.get_direccion()))
-        while iterador.padre is not None:
-            accion: Estado = iterador.padre
-            # accion, direccion
+        ultima_accion = (iterador.get_accion(), iterador.get_direccion())
+        print("ultima accion", ultima_accion)
+        accion: Estado = iterador.padre
+        # accion, direccion
+        iterador = iterador.padre
 
-            acciones.append((accion.get_accion(), accion.get_direccion()))
-            iterador = iterador.padre
-        print("Acciones", acciones)
         if self.__saltando > 0:
             self.__saltando -= 1
             return AccionsRana.ESPERAR
-        accion = acciones.pop()
-        accion = acciones.pop()
+        print("Accion", accion.get_accion(), accion.get_direccion())
+        if accion.get_direccion() is None:
+            meta = 1
+            return ultima_accion
 
-        # Se queda aquí, hay que hacer que entre en bucle para q me popee una acción cada vez
-
-        if accion[1] is None:
-            return accion[0]
+        if meta == 1:
+            return AccionsRana.ESPERAR
 
         if accion[0] == AccionsRana.BOTAR:
             self.__saltando = 2
-            return accion[0], accion[1]
+            return accion.get_accion(), accion.get_direccion()
 
-        return accion[0], accion[1]
+        return accion.get_accion(), accion.get_direccion()
+
