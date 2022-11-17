@@ -3,6 +3,8 @@ from ia_2022 import entorn
 from practica1 import joc, entorn as entorn_practica1
 from practica1.entorn import AccionsRana, ClauPercepcio, Direccio
 import copy
+import sys
+
 
 class Estado:
     def __init__(
@@ -103,8 +105,7 @@ class Estado:
         walls = self.__info.get(ClauPercepcio.PARETS)
         # comprobar si la posicion actual esta en los muros
         return pos_actual not in walls
-    
-    
+
     def generar_hijos(self, nombre_rana: str) -> list:
         """
         Esta funcion genera los posibles estados hijos de un estado,
@@ -222,30 +223,50 @@ class Estado:
             if estado_hijo is not None:
                 hijos.append(estado_hijo)
         return hijos
-    
+
     def puntuacion(self, nombre_rana: str) -> int:
         """
         Esta funcion calcula la puntuacion de un estado.
         Returns:
             _int_: puntuacion del estado
         """
-        suma = 0
-        for i in range(2):
-            suma = abs(self.get_posicion(nombre_rana)[i] - self.get_comida()[i])
-        return suma
+        puntuacionMAX = 0
+        puntuacionMIN = 0
+        if nombre_rana == "Miquel":
+
+            print("Estoy en Miquel")
+            # obtener la posicion de la rana
+            pos_rana = self.__info.get(ClauPercepcio.POSICIO).get(nombre_rana)
+            # obtener la posicion del olor
+            pos_olor = self.__info.get(ClauPercepcio.OLOR)
+            # calcular la distancia de Manhattan y añadir el coste
+            puntuacionMAX = abs(pos_rana[0] - pos_olor[0]) + abs(
+                pos_rana[1] - pos_olor[1]
+            )
+            print("PuntuacionMAX", puntuacionMAX)
+            return puntuacionMAX
+        else:
+            print("Estoy en PEP")
+            pos_rana = self.__info.get(ClauPercepcio.POSICIO).get(nombre_rana)
+            # obtener la posicion del olor
+            pos_olor = self.__info.get(ClauPercepcio.OLOR)
+            # calcular la distancia de Manhattan y añadir el coste
+            puntuacionMIN = -abs(pos_rana[0] - pos_olor[0]) + abs(
+                pos_rana[1] - pos_olor[1]
+            )
+            return puntuacionMIN
 
 
 class RanaMiniMax(Rana):
     def __init__(self, *args, **kwargs):
         super(Rana, self).__init__(*args, **kwargs)
-        self.__abiertos = None
-        self.__cerrados = None
-        self.__acciones = None
+
         self.__saltando = False
+
     def pinta(self, display):
         pass
 
-    def busqueda_minimax(self, estado: Estado, turno: bool, recursividad:int):
+    def busqueda_minimax(self, estado: Estado, turno: bool, recursividad: int):
         """Algoritmo de busqueda minimax
         Min -> False
         Args:
@@ -255,11 +276,15 @@ class RanaMiniMax(Rana):
             int: Valor de la mejor accion
         """
         puntuacion = estado.puntuacion(self.nom)
-        if recursividad == 2  or estado.es_meta(self.nom):
+        print("Puntuacion", puntuacion)
+        if recursividad == 2 or estado.es_meta(self.nom):
             return puntuacion, estado
-        #[print(self.minimax(estat_fill, not turno_max, recursividad + 1)) for estat_fill in estat.genera_fills()]
-        point_fills = [self.busqueda_minimax(estat_fill, not turno, recursividad+1) for estat_fill in estado.generar_hijos(self.nom)]
-        #print(punto)
+        # [print(self.minimax(estat_fill, not turno_max, recursividad + 1)) for estat_fill in estat.genera_fills()]
+        point_fills = [
+            self.busqueda_minimax(estat_fill, not turno, recursividad + 1)
+            for estat_fill in estado.generar_hijos(self.nom)
+        ]
+        # print(punto)
         if turno:
             return max(point_fills)
         else:
@@ -276,28 +301,26 @@ class RanaMiniMax(Rana):
             accion=AccionsRana.ESPERAR,
             direccion=None,
         )
-        if self.__acciones is None:
-            resultado = self.busqueda_minimax(estado_inicial, turno = True, recursividad=0)
-            print("Resultado", resultado)
-            print("Acciones: ", self.__acciones)
+        resultado = self.busqueda_minimax(estado_inicial, turno=True, recursividad=0)
+        print("Resultado", resultado)
+        iterador = resultado[1]
+        acciones = []
+        # Estado final
+        acciones.append((iterador.get_accion(), iterador.get_direccion()))
+        while iterador.padre is not None:
+            accion: Estado = iterador.padre
+            # accion, direccion
 
-            iterador = resultado[1]
-            print("Iterador: ", iterador)
-            acciones = []
-            acciones.append((iterador.get_accion(), iterador.get_direccion()))
-            while iterador.padre is not None:
-                accion: Estado = iterador.padre
-                    # accion, direccion
-                acciones.append((accion.get_accion(), accion.get_direccion()))
-                iterador = iterador.padre
-            self.__acciones = acciones
-
+            acciones.append((accion.get_accion(), accion.get_direccion()))
+            iterador = iterador.padre
+        print("Acciones", acciones)
         if self.__saltando > 0:
             self.__saltando -= 1
             return AccionsRana.ESPERAR
+        accion = acciones.pop()
+        accion = acciones.pop()
 
-        accion = self.__acciones.pop()
-        #Se queda aquí, hay que hacer que entre en bucle para q me popee una acción cada vez
+        # Se queda aquí, hay que hacer que entre en bucle para q me popee una acción cada vez
 
         if accion[1] is None:
             return accion[0]
