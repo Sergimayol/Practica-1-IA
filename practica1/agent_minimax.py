@@ -231,10 +231,15 @@ class Estado:
         return punto
 
     def puntuacion(self, nombre_rana: str) -> int:
-        if nombre_rana == "Miquel":
-            return self.punto("Pep") - self.punto("Miquel")
+        suma1 = self.punto("Pep") - self.punto("Miquel")
+        suma2 = self.punto("Miquel") - self.punto("Pep")
+        if suma1 != suma2:
+            if nombre_rana == "Miquel":
+                return suma1
+            else:
+                return suma2
         else:
-            return self.punto("Miquel") - self.punto("Pep")
+            return suma1 + 1
 
 
 class RanaMiniMax(Rana):
@@ -293,13 +298,23 @@ class RanaMiniMax(Rana):
             self.__saltando -= 1
             return AccionsRana.ESPERAR
 
-        posicion = abs(
-            estado_inicial.get_posicion(self.nom)[0] - estado_inicial.get_comida()[0]
-        ) + abs(
-            estado_inicial.get_posicion(self.nom)[1] - estado_inicial.get_comida()[1]
+        posicion = (
+            estado_inicial.get_posicion(self.nom)[0] - estado_inicial.get_comida()[0],
+            estado_inicial.get_posicion(self.nom)[1] - estado_inicial.get_comida()[1],
         )
+        print("Posicion", posicion)
+        posiciones_posibles_finales = []
+        posiciones_posibles_finales.append((0, 1))
+        posiciones_posibles_finales.append((0, -1))
+        posiciones_posibles_finales.append((1, 0))
+        posiciones_posibles_finales.append((-1, 0))
+        posiciones_posibles_finales.append((2, 0))
+        posiciones_posibles_finales.append((0, 2))
+        posiciones_posibles_finales.append((-2, 0))
+        posiciones_posibles_finales.append((0, -2))
 
-        if posicion <= 2:
+        if posicion in posiciones_posibles_finales:
+            print("Ultima accion", ultima_accion)
             return ultima_accion
 
         if accion[0] == AccionsRana.BOTAR:
