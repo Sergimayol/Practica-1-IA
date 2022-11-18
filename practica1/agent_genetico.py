@@ -7,14 +7,27 @@ import copy
 
 
 class Individuo:
-    LISTA_ACCIONES = [AccionsRana.BOTAR, AccionsRana.MOURE]
-    LISTA_DIRECCIONES = [
-        Direccio.BAIX,
-        Direccio.DRETA,
-        Direccio.DRETA,
-        Direccio.ESQUERRE,
+    LISTA_ACCIONES = [
+        (0, +1),
+        (0, -1),
+        (+1, 0),
+        (-1, 0),
+        (0, +2),
+        (0, -2),
+        (+2, 0),
+        (-2, 0),
     ]
-    TAM_TABLERO = 8  # 0..7
+    MAPA_ACCIONES_DIRECCIONES = {
+        (0, +1): (AccionsRana.MOURE, Direccio.BAIX),
+        (0, -1): (AccionsRana.MOURE, Direccio.DALT),
+        (+1, 0): (AccionsRana.MOURE, Direccio.DRETA),
+        (-1, 0): (AccionsRana.MOURE, Direccio.ESQUERRE),
+        (0, +2): (AccionsRana.BOTAR, Direccio.BAIX),
+        (0, -2): (AccionsRana.BOTAR, Direccio.DALT),
+        (+2, 0): (AccionsRana.BOTAR, Direccio.DRETA),
+        (-2, 0): (AccionsRana.BOTAR, Direccio.ESQUERRE),
+    }
+    TAM_TABLERO = 8  # Tamaño del tablero
 
     def __init__(
         self,
@@ -28,7 +41,7 @@ class Individuo:
         self.posicion = posicion
         self.objetivo = objetivo
         self.paredes = paredes
-        self.fitness = self._get_distancia(posicion, objetivo)
+        self.fitness = fitness
 
     def __str__(self) -> str:
         return f"Acciones: {self.acciones}, Fitness: {self.fitness}, Posicion: {self.posicion}, Objetivo: {self.objetivo}"
@@ -51,53 +64,69 @@ class Individuo:
     def es_meta(self):
         return self.fitness == 0
 
-    def cruzar(self, otro):
-        num_hijos = random.randint(0, len(self.acciones))
-        hijos = []
-        for _ in range(num_hijos):
-            random_index = random.randint(0, len(self.acciones))
-            # acciones = self.acciones[:random_index] + otro.acciones[random_index:]
-            acciones = self.acciones[:random_index]
-            acciones.extend(otro.acciones[random_index:])
+    def cruzar(self, otro) -> list:
+        """Cruza dos individuos, generando una cantidad aleatoria de hijos entre
+        cero y la longitud de las acciones a realizar.
 
-            print("Acciones del cruze: ", acciones)
-            input("Ok?")
-            acciones_validas = self._get_lista_acciones_validas(acciones)
-            individuo = Individuo(
-                acciones=acciones_validas,
+        Args:
+            otro (Individuo): Individuo con el que se cruzará.
+
+        Returns:
+            hijos (list): Lista de hijos generados en el cruce.
+        """
+        hijos = []
+        num_hijos = random.randint(0, len(self.acciones))
+
+        for _ in range(num_hijos):
+            indice_de_corte = random.randint(0, len(self.acciones))
+            parte1 = self.acciones[:indice_de_corte]
+            parte2 = otro.acciones[indice_de_corte:]
+
+            parte1.extend(parte2)
+
+            acciones_generadas_validas = self._get_lista_acciones_validas(parte1)
+
+            hijo = Individuo(
+                acciones=acciones_generadas_validas,
                 posicion=self.posicion,
                 objetivo=self.objetivo,
                 paredes=self.paredes,
             )
-            print("Despues de cruzar", individuo)
-            input("Ok?")
-            if random.randint(0, 1) == 1:
-                individuo._mutar()
 
-            hijos.append(individuo)
+            # Mutar -> prob (50%)
+            if random.randint(0, 1) == 0:
+                hijo._mutar()
+
+            hijos.append(hijo)
 
         return hijos
 
     def _mutar(self) -> None:
-        acciones = copy.deepcopy(self.acciones)
-        print("Antes de mutar", len(acciones))
-        acciones[random.randint(0, len(self.acciones) - 1)] = (
-            random.choice(self.LISTA_ACCIONES),
-            random.choice(self.LISTA_DIRECCIONES),
-        )
-        self.acciones = acciones
+        """Realiza una mutación en el individuo, cambiando una acción aleatoria
+        por otra aleatoria. Posibles mutaciones:
+            - Cambiar una acción.
+            - Añadir una acción.
+        """
+        if random.randint(0, 1) == 0:
+            # Cambiar una acción
+            indice = random.randint(0, len(self.acciones) - 1)
+            self.acciones[indice] = random.choice(self.LISTA_ACCIONES)
+        else:
+            # Añadir una acción
+            self.acciones.append(random.choice(self.LISTA_ACCIONES))
 
     def calcular_fitness(self):
         """Función de fitness: El fitness de un individuo vendrá dado por la
         distancia que le queda al individuo para llegar a la meta, desde su
         última acción.
         """
-        pos_actual = self.posicion
-        pos_siguiente = None
+        pos_actual = (0, 0)
 
-        for accion in self.acciones:
-            pos_siguiente = self._get_posicion_siguiente(pos_actual, accion)
-            self.fitness = self._get_distancia(pos_siguiente, self.objetivo)
+        for e in self.acciones:
+            pos_final = self._get_posicion_siguiente(pos_actual, e)
+            pos_actual = pos_final
+
+        self.fitness = self._get_distancia(pos_final, self.objetivo)
 
     def _get_distancia(self, pos1: tuple, pos2: tuple) -> int:
         """Calcula la distancia entre dos posiciones
@@ -111,37 +140,25 @@ class Individuo:
         """
         return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
 
-    def generar_acciones_aleatorias(self):
-        """
-        Genera una lista de acciones aleatorias, donde cada acción es
-        un movimiento válido.
-        """
-        acciones = []
-        num_acciones = random.randint(1, 12)
-        for _ in range(num_acciones):
-            acciones.append(
-                (
-                    random.choice(self.LISTA_ACCIONES),
-                    random.choice(self.LISTA_DIRECCIONES),
-                )
-            )
-        # Cortar la lista de acciones si encuentra una acción que no es válida,
-        #  para quedarse con los primeros movimientos válidos
-        self.acciones = self._get_lista_acciones_validas(acciones)
+    def generar_poblacion_incial(self, num_individuos: int) -> list:
+        """Genera una población inicial de individuos, donde todas serán acciones
+        válidas. Cada una de las acciones será una lista de acciones aleatorias
+        válidas comenzando desde la posición actual del individuo.
 
-    def generar_poblacion_incial(self, num_individuos: int):
+        Args:
+            num_individuos (int): Número de individuos que incialamente forman la
+            población.
+
+        Returns:
+            poblacion (list): Lista de individuos.
+        """
         poblacion = []
         for _ in range(num_individuos):
             acciones = []
             num_acciones = random.randint(0, 20)
-            # acciones.append(self.acciones)
+            acciones.append(self.acciones)
             for _ in range(num_acciones):
-                acciones.append(
-                    (
-                        random.choice(self.LISTA_ACCIONES),
-                        random.choice(self.LISTA_DIRECCIONES),
-                    )
-                )
+                acciones.append(random.choice(self.LISTA_ACCIONES))
 
             acciones_validas = self._get_lista_acciones_validas(acciones)
 
@@ -157,45 +174,70 @@ class Individuo:
         return poblacion
 
     def _get_lista_acciones_validas(self, acciones: list) -> list:
-        pos_actual = self.posicion
-        nueva_lista_acciones = []
-        # Recorrer la lista de acciones hasta encontrar una acción que no sea válida
+        """Devuelve una lista de acciones válidas
+
+        Arguments:
+            acciones {list} -- Lista de acciones
+
+        Returns:
+            list -- Lista de acciones válidas
+        """
+        acciones_validas = []
+        pos_actual = (0, 0)
         for accion in acciones:
-            pos_actual = self._get_posicion_siguiente(pos_actual, accion)
-            if not self._es_posicion_valida(pos_actual):
-                nueva_lista_acciones = acciones[: acciones.index(accion)]
+            pos_siguiente = self._get_posicion_siguiente(pos_actual, accion)
+
+            if not self._es_posicion_valida(pos_siguiente):
                 break
 
-        return nueva_lista_acciones
+            acciones_validas.append(accion)
+            pos_actual = pos_siguiente
 
-    def _get_posicion_siguiente(
-        self, pos_actual: tuple, accion_a_realizar: tuple
-    ) -> tuple:
-        accion, direccion = accion_a_realizar
+        return acciones_validas
 
-        # Desplazamiento -> Botar(2) o Mover(1)
-        desplazamiento = 1 if accion == AccionsRana.MOURE else 2
+    def _get_posicion_siguiente(self, pos_actual: tuple, accion: tuple) -> tuple:
+        """Devuelve la posición siguiente a partir de una posición actual y una
+        acción
 
-        if direccion == Direccio.ESQUERRE:  # Izquierda
-            return (pos_actual[0] - desplazamiento, pos_actual[1])
+        Arguments:
+            pos_actual {tuple} -- Posición actual\n
+            accion {tuple} -- Acción
 
-        if direccion == Direccio.DRETA:  # Derecha
-            return (pos_actual[0] + desplazamiento, pos_actual[1])
-
-        if direccion == Direccio.BAIX:  # Abajo
-            return (pos_actual[0], pos_actual[1] + desplazamiento)
-
-        if direccion == Direccio.DALT:  # Arriba
-            return (pos_actual[0], pos_actual[1] - desplazamiento)
+        Returns:
+            tuple -- Posición siguiente
+        """
+        return (pos_actual[0] + accion[0], pos_actual[1] + accion[1])
 
     def _es_posicion_valida(self, pos: tuple) -> bool:
+        """Comprueba si una posición es válida
+
+        Arguments:
+            pos {tuple} -- Posición a comprobar
+
+        Returns:
+            bool -- True si la posición es válida, False en caso contrario
+        """
         return (
-            pos[0] >= 0
-            and pos[0] < self.TAM_TABLERO
-            and pos[1] >= 0
-            and pos[1] < self.TAM_TABLERO
+            0 <= pos[0] < self.TAM_TABLERO
+            and 0 <= pos[1] < self.TAM_TABLERO
             and pos not in self.paredes
         )
+
+    def get_acciones_direcciones(self) -> list:
+        """Devuelve una lista de acciones en forma de acción - dirección
+
+        Returns:
+            acciones_direcciones (list): Lista de acciones en forma de acción - dirección
+        """
+        acciones_direcciones = []
+        lista_acciones = self.acciones[::-1]
+
+        for accion in lista_acciones:
+            if not (accion == self.posicion):
+                aux = self.MAPA_ACCIONES_DIRECCIONES.get(accion)
+                acciones_direcciones.append(aux)
+
+        return acciones_direcciones
 
 
 class RanaGenetica(Rana):
@@ -205,7 +247,7 @@ class RanaGenetica(Rana):
         self.__saltando = 0
 
     def _busquedaGenetica(self, individuo: Individuo):
-        poblacion = individuo.generar_poblacion_incial(50)
+        poblacion = individuo.generar_poblacion_incial(20)
         cola = PriorityQueue()
 
         for individuo in poblacion:
@@ -213,30 +255,25 @@ class RanaGenetica(Rana):
             print(individuo)
             cola.put(individuo)
 
-        input("Pulsa enter para continuar")
-
         while len(poblacion) > 0:
-            print("Inicio de iteración")
-            print("Poblacion: ", len(poblacion))
+
             for _ in range(10):
                 individuo1 = cola.get()
                 individuo2 = cola.get()
-
-                print("Individuo 1: ", individuo1)
-                print("Individuo 2: ", individuo2)
-                input("Pulsa enter para continuar")
 
                 poblacion.extend(individuo1.cruzar(individuo2))
 
                 for individuo in poblacion:
                     individuo.calcular_fitness()
-                    print("Individuo en población despues de cruze", individuo)
                     cola.put(individuo)
 
                 for individuo in cola.queue:
-                    print(individuo.fitness)
                     if individuo.es_meta():
-                        self.__acciones = individuo.acciones
+                        print("\n\n")
+                        print("Meta")
+                        print(individuo)
+                        print("\n\n")
+                        self.__acciones = individuo.get_acciones_direcciones()
                         return True
 
         return False
@@ -248,7 +285,7 @@ class RanaGenetica(Rana):
         percepciones = percep.to_dict()
 
         individuo = Individuo(
-            acciones=[percepciones[ClauPercepcio.POSICIO].get("Miquel")],
+            acciones=percepciones[ClauPercepcio.POSICIO].get("Miquel"),
             posicion=percepciones[ClauPercepcio.POSICIO].get("Miquel"),
             objetivo=percepciones[ClauPercepcio.OLOR],
             paredes=percepciones[ClauPercepcio.PARETS],
