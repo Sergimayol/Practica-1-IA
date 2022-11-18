@@ -3,7 +3,6 @@ import random
 from agent import Rana
 from ia_2022 import entorn
 from practica1.entorn import AccionsRana, ClauPercepcio, Direccio
-import copy
 
 
 class Individuo:
@@ -252,7 +251,6 @@ class RanaGenetica(Rana):
 
         for individuo in poblacion:
             individuo.calcular_fitness()
-            print(individuo)
             cola.put(individuo)
 
         while len(poblacion) > 0:
@@ -269,10 +267,6 @@ class RanaGenetica(Rana):
 
                 for individuo in cola.queue:
                     if individuo.es_meta():
-                        print("\n\n")
-                        print("Meta")
-                        print(individuo)
-                        print("\n\n")
                         self.__acciones = individuo.get_acciones_direcciones()
                         return True
 
