@@ -3,7 +3,7 @@ from ia_2022 import entorn
 from practica1 import joc, entorn as entorn_practica1
 from practica1.entorn import AccionsRana, ClauPercepcio, Direccio
 import copy
-import sys
+import os
 
 
 class Estado:
@@ -224,18 +224,17 @@ class Estado:
                 hijos.append(estado_hijo)
         return hijos
 
-
     def punto(self, nombre_rana):
         pos_comida = self.get_comida()
         pos_rana = self.get_posicion(nombre_rana)
-        punto = abs(pos_comida[0]-pos_rana[0]) + abs(pos_comida[1]-pos_rana[1])
+        punto = abs(pos_comida[0] - pos_rana[0]) + abs(pos_comida[1] - pos_rana[1])
         return punto
 
     def puntuacion(self, nombre_rana: str) -> int:
-        if nombre_rana == 'Miquel':
-            return self.punto('Pep')-self.punto('Miquel')
+        if nombre_rana == "Miquel":
+            return self.punto("Pep") - self.punto("Miquel")
         else:
-            return self.punto('Miquel')-self.punto('Pep')
+            return self.punto("Miquel") - self.punto("Pep")
 
 
 class RanaMiniMax(Rana):
@@ -259,6 +258,7 @@ class RanaMiniMax(Rana):
         puntuacion = estado.puntuacion(self.nom)
         if recursividad == 2 or estado.es_meta(self.nom):
             return puntuacion, estado
+
         # [print(self.minimax(estat_fill, not turno_max, recursividad + 1)) for estat_fill in estat.genera_fills()]
         point_fills = [
             self.busqueda_minimax(estat_fill, not turno, recursividad + 1)
@@ -283,28 +283,27 @@ class RanaMiniMax(Rana):
         )
         # Devuelve puntuacion y estado
         resultado = self.busqueda_minimax(estado_inicial, turno=True, recursividad=0)
-        meta = 0
         iterador = resultado[1]
+
         ultima_accion = (iterador.get_accion(), iterador.get_direccion())
-        print("ultima accion", ultima_accion)
         accion: Estado = iterador.padre
-        # accion, direccion
         iterador = iterador.padre
 
         if self.__saltando > 0:
             self.__saltando -= 1
             return AccionsRana.ESPERAR
-        print("Accion", accion.get_accion(), accion.get_direccion())
-        if accion.get_direccion() is None:
-            meta = 1
-            return ultima_accion
 
-        if meta == 1:
-            return AccionsRana.ESPERAR
+        posicion = abs(
+            estado_inicial.get_posicion(self.nom)[0] - estado_inicial.get_comida()[0]
+        ) + abs(
+            estado_inicial.get_posicion(self.nom)[1] - estado_inicial.get_comida()[1]
+        )
+
+        if posicion <= 2:
+            return ultima_accion
 
         if accion[0] == AccionsRana.BOTAR:
             self.__saltando = 2
             return accion.get_accion(), accion.get_direccion()
 
         return accion.get_accion(), accion.get_direccion()
-
