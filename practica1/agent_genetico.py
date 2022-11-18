@@ -14,7 +14,7 @@ class Individuo:
         Direccio.DRETA,
         Direccio.ESQUERRE,
     ]
-    TAM_TABLERO = 7  # 0..7
+    TAM_TABLERO = 8  # 0..7
 
     def __init__(
         self,
@@ -25,10 +25,10 @@ class Individuo:
         paredes: list = None,
     ):
         self.acciones = acciones
-        self.fitness = fitness
         self.posicion = posicion
         self.objetivo = objetivo
         self.paredes = paredes
+        self.fitness = self._get_distancia(posicion, objetivo)
 
     def __str__(self) -> str:
         return f"Acciones: {self.acciones}, Fitness: {self.fitness}, Posicion: {self.posicion}, Objetivo: {self.objetivo}"
@@ -48,29 +48,33 @@ class Individuo:
     def get_pos_ag(self):
         return self.posicion
 
+    def es_meta(self):
+        return self.fitness == 0
+
     def cruzar(self, otro):
-        num_cruces = random.randint(0, len(self.acciones))
+        num_hijos = random.randint(0, len(self.acciones))
         hijos = []
-        for _ in range(num_cruces):
+        for _ in range(num_hijos):
             random_index = random.randint(0, len(self.acciones))
             # acciones = self.acciones[:random_index] + otro.acciones[random_index:]
             acciones = self.acciones[:random_index]
             acciones.extend(otro.acciones[random_index:])
 
+            print("Acciones del cruze: ", acciones)
+            input("Ok?")
+            acciones_validas = self._get_lista_acciones_validas(acciones)
             individuo = Individuo(
-                acciones=acciones,
+                acciones=acciones_validas,
                 posicion=self.posicion,
                 objetivo=self.objetivo,
                 paredes=self.paredes,
             )
-
-            print("Acciones del cruze: ", acciones)
-
-            individuo.acciones = self._get_lista_acciones_validas(individuo.acciones)
-            print("Despues de cruzar", len(individuo.acciones))
-            if random.randint(0, 1) == 1 and len(individuo.acciones) > 0:
+            print("Despues de cruzar", individuo)
+            input("Ok?")
+            if random.randint(0, 1) == 1:
                 individuo._mutar()
-                hijos.append(individuo)
+
+            hijos.append(individuo)
 
         return hijos
 
@@ -84,9 +88,28 @@ class Individuo:
         self.acciones = acciones
 
     def calcular_fitness(self):
-        self.fitness = abs(self.posicion[0] - self.objetivo[0]) + abs(
-            self.posicion[1] - self.objetivo[1]
-        )
+        """Función de fitness: El fitness de un individuo vendrá dado por la
+        distancia que le queda al individuo para llegar a la meta, desde su
+        última acción.
+        """
+        pos_actual = self.posicion
+        pos_siguiente = None
+
+        for accion in self.acciones:
+            pos_siguiente = self._get_posicion_siguiente(pos_actual, accion)
+            self.fitness = self._get_distancia(pos_siguiente, self.objetivo)
+
+    def _get_distancia(self, pos1: tuple, pos2: tuple) -> int:
+        """Calcula la distancia entre dos posiciones
+
+        Arguments:
+            pos1 {tuple} -- Posición 1\n
+            pos2 {tuple} -- Posición 2
+
+        Returns:
+            int -- Distancia entre las dos posiciones
+        """
+        return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
 
     def generar_acciones_aleatorias(self):
         """
@@ -105,6 +128,33 @@ class Individuo:
         # Cortar la lista de acciones si encuentra una acción que no es válida,
         #  para quedarse con los primeros movimientos válidos
         self.acciones = self._get_lista_acciones_validas(acciones)
+
+    def generar_poblacion_incial(self, num_individuos: int):
+        poblacion = []
+        for _ in range(num_individuos):
+            acciones = []
+            num_acciones = random.randint(0, 20)
+            # acciones.append(self.acciones)
+            for _ in range(num_acciones):
+                acciones.append(
+                    (
+                        random.choice(self.LISTA_ACCIONES),
+                        random.choice(self.LISTA_DIRECCIONES),
+                    )
+                )
+
+            acciones_validas = self._get_lista_acciones_validas(acciones)
+
+            indiv = Individuo(
+                acciones=acciones_validas,
+                posicion=self.posicion,
+                objetivo=self.objetivo,
+                paredes=self.paredes,
+            )
+
+            poblacion.append(indiv)
+
+        return poblacion
 
     def _get_lista_acciones_validas(self, acciones: list) -> list:
         pos_actual = self.posicion
@@ -155,59 +205,37 @@ class RanaGenetica(Rana):
         self.__saltando = 0
 
     def _busquedaGenetica(self, individuo: Individuo):
-        # Creamos la población inicial
-        poblacion = []
+        poblacion = individuo.generar_poblacion_incial(50)
+        cola = PriorityQueue()
 
-        for _ in range(10):
-            indv = Individuo(
-                acciones=[],
-                posicion=individuo.posicion,
-                objetivo=individuo.objetivo,
-                paredes=individuo.paredes,
-            )
-            while True:
-                indv.generar_acciones_aleatorias()
-                if len(indv.acciones) > 0:
-                    break
-            poblacion.append(indv)
-            print("Individuo: ", indv)
-
-        queue = PriorityQueue()  # Los individuos con mejor fitness van al principio
-
-        # Evaluamos y ordenamos la población
         for individuo in poblacion:
             individuo.calcular_fitness()
-            queue.put(individuo)
+            print(individuo)
+            cola.put(individuo)
+
+        input("Pulsa enter para continuar")
 
         while len(poblacion) > 0:
-
+            print("Inicio de iteración")
+            print("Poblacion: ", len(poblacion))
             for _ in range(10):
-                # Seleccionamos los dos mejores individuos
-                individuo1 = queue.get()
-                individuo2 = queue.get()
+                individuo1 = cola.get()
+                individuo2 = cola.get()
 
                 print("Individuo 1: ", individuo1)
                 print("Individuo 2: ", individuo2)
+                input("Pulsa enter para continuar")
 
-                # Cruzamos los individuos
-                while True:
-                    hijos = individuo1.cruzar(individuo2)
-                    if len(hijos) > 0:
-                        break
+                poblacion.extend(individuo1.cruzar(individuo2))
 
-                print("Hijos generados del cruze: ", hijos)
-
-                # Aumentamos la población con los mejores individuos
-                poblacion.extend(hijos)
-
-                # Evaluamos y ordenamos la población
                 for individuo in poblacion:
                     individuo.calcular_fitness()
-                    queue.put(individuo)
+                    print("Individuo en población despues de cruze", individuo)
+                    cola.put(individuo)
 
-                # Comprobamos si alguno de los individuos es el objetivo
-                for individuo in queue.queue:
-                    if individuo.get_valor() == 0:
+                for individuo in cola.queue:
+                    print(individuo.fitness)
+                    if individuo.es_meta():
                         self.__acciones = individuo.acciones
                         return True
 
@@ -225,8 +253,10 @@ class RanaGenetica(Rana):
             objetivo=percepciones[ClauPercepcio.OLOR],
             paredes=percepciones[ClauPercepcio.PARETS],
         )
+
         if self.__acciones is None:
             self._busquedaGenetica(individuo)
+            print("Acciones: ", self.__acciones)
 
         if len(self.__acciones) == 0:
             return AccionsRana.ESPERAR
