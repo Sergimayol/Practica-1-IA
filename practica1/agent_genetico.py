@@ -190,7 +190,11 @@ class RanaGenetica(Rana):
                 print("Individuo 2: ", individuo2)
 
                 # Cruzamos los individuos
-                hijos = individuo1.cruzar(individuo2)
+                while True:
+                    hijos = individuo1.cruzar(individuo2)
+                    if len(hijos) > 0:
+                        break
+
                 print("Hijos generados del cruze: ", hijos)
 
                 # Aumentamos la población con los mejores individuos
