@@ -101,10 +101,10 @@ class Individuo:
         return hijos
 
     def _mutar(self) -> None:
-        """Realiza una mutación en el individuo, cambiando una acción aleatoria
-        por otra aleatoria. Posibles mutaciones:
-            - Cambiar una acción.
-            - Añadir una acción.
+        """Realiza una mutación en el individuo. Se modifica aleatoriamente una parte
+        de la secuencia de acciones. Posibles mutaciones:
+        - Cambiar una acción.
+        - Añadir una acción.
         """
         if random.randint(0, 1) == 0:
             # Cambiar una acción
@@ -130,9 +130,9 @@ class Individuo:
     def _get_distancia(self, pos1: tuple, pos2: tuple) -> int:
         """Calcula la distancia entre dos posiciones
 
-        Arguments:
-            pos1 {tuple} -- Posición 1\n
-            pos2 {tuple} -- Posición 2
+        Args:
+            pos1 (tuple) -- Posición 1\n
+            pos2 (tuple) -- Posición 2
 
         Returns:
             int -- Distancia entre las dos posiciones
@@ -175,11 +175,11 @@ class Individuo:
     def _get_lista_acciones_validas(self, acciones: list) -> list:
         """Devuelve una lista de acciones válidas
 
-        Arguments:
-            acciones {list} -- Lista de acciones
+        Args:
+            acciones (list): Lista de acciones
 
         Returns:
-            list -- Lista de acciones válidas
+            acciones_validas (list): Lista de acciones válidas
         """
         acciones_validas = []
         pos_actual = (0, 0)
@@ -198,12 +198,12 @@ class Individuo:
         """Devuelve la posición siguiente a partir de una posición actual y una
         acción
 
-        Arguments:
-            pos_actual {tuple} -- Posición actual\n
-            accion {tuple} -- Acción
+        Args:
+            pos_actual (tuple): Posición actual\n
+            accion (tuple): Acción a realizar
 
         Returns:
-            tuple -- Posición siguiente
+            tuple: Siguiete posición
         """
         return (pos_actual[0] + accion[0], pos_actual[1] + accion[1])
 
@@ -245,7 +245,15 @@ class RanaGenetica(Rana):
         self.__acciones = None
         self.__saltando = 0
 
-    def _busquedaGenetica(self, individuo: Individuo):
+    def _busquedaGenetica(self, individuo: Individuo) -> bool:
+        """Realiza la búsqueda genética.
+
+        Args:
+            individuo (Individuo): Individuo inicial, del cual se generará la población.
+
+        Returns:
+            bool: True si se ha encontrado la solución, False en caso contrario.
+        """
         poblacion = individuo.generar_poblacion_incial(20)
         cola = PriorityQueue()
 
@@ -287,7 +295,6 @@ class RanaGenetica(Rana):
 
         if self.__acciones is None:
             self._busquedaGenetica(individuo)
-            print("Acciones: ", self.__acciones)
 
         if len(self.__acciones) == 0:
             return AccionsRana.ESPERAR
