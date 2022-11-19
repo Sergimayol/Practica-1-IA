@@ -64,19 +64,26 @@ class Estado:
         )
 
     def legal(self, pos_actual: tuple) -> bool:
-        # obtener los muros
+        """Comprueba si la posición actual no esta dentro de las paredes
+
+        Args:
+            pos_actual (tuple): posición actual
+
+        Returns:
+            bool: True si la posición actual no esta dentro de las paredes, False en caso contrario
+        """
         walls = self.__info.get(ClauPercepcio.PARETS)
-        # comprobar si la posicion actual esta en los muros
         return pos_actual not in walls
 
     def generar_hijos(self, nombre_rana: str) -> list:
-        """
-        Esta funcion genera los posibles estados hijos de un estado,
+        """Esta funcion genera los posibles estados hijos de un estado,
         siempre y cuando sean legales.
+
         Args:
-            nombre_rana (_str_): nombre de la rana que se desea generar los hijos
+            nombre_rana (str): nombre de la rana que se desea generar los hijos
+
         Returns:
-            _list_: list de estados hijos generados
+            hijos (list): lista de estados hijos generados
         """
         hijos = []
         # pos 0 = x, pos 1 = y (empiezan en 0)
@@ -183,12 +190,16 @@ class RanaBusquedaNoInformada(Rana):
         self.__acciones = None
         self.__saltando = 0
 
-    def _buscar(self, estado: Estado, nombre_rana: str):
+    def _buscar(self, estado: Estado, nombre_rana: str) -> bool:
         """Método que implementa el algoritmo de búsqueda no informada. Este método
         implementa el algoritmo de búsqueda por profundidad.
 
         Args:
             estado (Estado): Estado en el que se encuentra la rana.
+            nombre_rana (str): Nombre de la rana.
+
+        Returns:
+            bool: True si ha encontrado la solución, False en caso contrario.
         """
         self.__abiertos = []
         self.__cerrados = set()
