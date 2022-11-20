@@ -310,38 +310,30 @@ class RanaMiniMax(Rana):
             estado_inicial.get_posicion(self.nom)[1] - estado_inicial.get_comida()[1],
         )
 
-        posiciones_posibles_finales2 = []
-        posiciones_posibles_finales2.append((0, 2))
-        posiciones_posibles_finales2.append((0, -2))
-        posiciones_posibles_finales2.append((2, 0))
-        posiciones_posibles_finales2.append((-2, 0))
-        if posicion in posiciones_posibles_finales2:
-            if posicion == (0, 2):
-                return AccionsRana.BOTAR, Direccio.DALT
-            elif posicion == (0, -2):
-                return AccionsRana.BOTAR, Direccio.BAIX
-            elif posicion == (2, 0):
-                return AccionsRana.BOTAR, Direccio.ESQUERRE
-            elif posicion == (-2, 0):
-                return AccionsRana.BOTAR, Direccio.DRETA
+        posiciones_posibles_finales = {
+            (0, 1): (AccionsRana.MOURE, Direccio.DALT),
+            (0, -1): (AccionsRana.MOURE, Direccio.BAIX),
+            (1, 0): (AccionsRana.MOURE, Direccio.DRETA),
+            (-1, 0): (AccionsRana.MOURE, Direccio.ESQUERRE),
+        }
 
-        posiciones_posibles_finales = []
-        posiciones_posibles_finales.append((0, 1))
-        posiciones_posibles_finales.append((0, -1))
-        posiciones_posibles_finales.append((1, 0))
-        posiciones_posibles_finales.append((-1, 0))
-        if posicion in posiciones_posibles_finales:
-            if posicion == (0, 1):
-                return AccionsRana.MOURE, Direccio.DALT
-            elif posicion == (0, -1):
-                return AccionsRana.MOURE, Direccio.BAIX
-            elif posicion == (1, 0):
-                return AccionsRana.MOURE, Direccio.ESQUERRE
-            elif posicion == (-1, 0):
-                return AccionsRana.MOURE, Direccio.DRETA
-        else:
-            if accion[0] == AccionsRana.BOTAR:
-                self.__saltando = 2
-                return accion.get_accion(), accion.get_direccion()
+        posiciones_posibles_finales2 = {
+            (0, 2): (AccionsRana.BOTAR, Direccio.DALT),
+            (0, -2): (AccionsRana.BOTAR, Direccio.BAIX),
+            (2, 0): (AccionsRana.BOTAR, Direccio.DRETA),
+            (-2, 0): (AccionsRana.BOTAR, Direccio.ESQUERRE),
+        }
 
+        aux = posiciones_posibles_finales2.get(posicion)
+        if aux is not None:
+            return aux
+
+        aux = posiciones_posibles_finales.get(posicion)
+        if aux is not None:
+            return aux
+
+        if accion[0] == AccionsRana.BOTAR:
+            self.__saltando = 2
             return accion.get_accion(), accion.get_direccion()
+
+        return accion.get_accion(), accion.get_direccion()
