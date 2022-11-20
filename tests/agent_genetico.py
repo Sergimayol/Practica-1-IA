@@ -1,3 +1,5 @@
+import time
+import sys
 from queue import PriorityQueue
 import random
 from agent import Rana
@@ -292,24 +294,10 @@ class RanaGenetica(Rana):
             objetivo=percepciones[ClauPercepcio.OLOR],
             paredes=percepciones[ClauPercepcio.PARETS],
         )
-
-        if self.__acciones is None:
-            self._busquedaGenetica(individuo)
-
-        if len(self.__acciones) == 0:
-            return AccionsRana.ESPERAR
-
-        if self.__saltando > 0:
-            self.__saltando -= 1
-            return AccionsRana.ESPERAR
-
-        accion = self.__acciones.pop()
-
-        if accion[1] is None:
-            return accion[0]
-
-        if accion[0] == AccionsRana.BOTAR:
-            self.__saltando = 2
-            return accion[0], accion[1]
-
-        return accion[0], accion[1]
+        print("Inicio test rendimiento")
+        start = time.time()
+        self._busquedaGenetica(individuo)
+        end = time.time()
+        print("Fin test rendimiento")
+        print(f"Tiempo de ejecución: {end - start}")
+        sys.exit(0)
