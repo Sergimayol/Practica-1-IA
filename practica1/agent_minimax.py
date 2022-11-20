@@ -286,13 +286,15 @@ class RanaMiniMax(Rana):
             direccion=None,
             accion=AccionsRana.ESPERAR,
         )
+
         # Devuelve puntuacion y estado
         resultado = self.busqueda_minimax(estado_inicial, turno=True, recursividad=0)
         iterador = resultado[1]
-
-        ultima_accion = (iterador.get_accion(), iterador.get_direccion())
         accion: Estado = iterador.padre
         iterador = iterador.padre
+
+        if accion is None:
+            return AccionsRana.ESPERAR
 
         if self.__saltando > 0:
             self.__saltando -= 1
@@ -302,23 +304,39 @@ class RanaMiniMax(Rana):
             estado_inicial.get_posicion(self.nom)[0] - estado_inicial.get_comida()[0],
             estado_inicial.get_posicion(self.nom)[1] - estado_inicial.get_comida()[1],
         )
-        print("Posicion", posicion)
+
+        posiciones_posibles_finales2 = []
+        posiciones_posibles_finales2.append((0, 2))
+        posiciones_posibles_finales2.append((0, -2))
+        posiciones_posibles_finales2.append((2, 0))
+        posiciones_posibles_finales2.append((-2, 0))
+        if posicion in posiciones_posibles_finales2:
+            if posicion == (0, 2):
+                return AccionsRana.BOTAR, Direccio.DALT
+            elif posicion == (0, -2):
+                return AccionsRana.BOTAR, Direccio.BAIX
+            elif posicion == (2, 0):
+                return AccionsRana.BOTAR, Direccio.ESQUERRE
+            elif posicion == (-2, 0):
+                return AccionsRana.BOTAR, Direccio.DRETA
+
         posiciones_posibles_finales = []
         posiciones_posibles_finales.append((0, 1))
         posiciones_posibles_finales.append((0, -1))
         posiciones_posibles_finales.append((1, 0))
         posiciones_posibles_finales.append((-1, 0))
-        posiciones_posibles_finales.append((2, 0))
-        posiciones_posibles_finales.append((0, 2))
-        posiciones_posibles_finales.append((-2, 0))
-        posiciones_posibles_finales.append((0, -2))
-
         if posicion in posiciones_posibles_finales:
-            print("Ultima accion", ultima_accion)
-            return ultima_accion
+            if posicion == (0, 1):
+                return AccionsRana.MOURE, Direccio.DALT
+            elif posicion == (0, -1):
+                return AccionsRana.MOURE, Direccio.BAIX
+            elif posicion == (1, 0):
+                return AccionsRana.MOURE, Direccio.ESQUERRE
+            elif posicion == (-1, 0):
+                return AccionsRana.MOURE, Direccio.DRETA
+        else:
+            if accion[0] == AccionsRana.BOTAR:
+                self.__saltando = 2
+                return accion.get_accion(), accion.get_direccion()
 
-        if accion[0] == AccionsRana.BOTAR:
-            self.__saltando = 2
             return accion.get_accion(), accion.get_direccion()
-
-        return accion.get_accion(), accion.get_direccion()
