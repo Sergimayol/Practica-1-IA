@@ -231,15 +231,12 @@ class Estado:
         return punto
 
     def puntuacion(self, nombre_rana: str) -> int:
-        suma1 = self.punto("Pep") - self.punto("Miquel")
-        suma2 = self.punto("Miquel") - self.punto("Pep")
-        if suma1 != suma2:
-            if nombre_rana == "Miquel":
-                return suma1
-            else:
-                return suma2
-        else:
-            return suma1 + 1
+        nombres = self.get_frog_names()
+        resultado1 = self.punto(nombres[1]) - self.punto(nombres[0])
+        resultado2 = self.punto(nombres[0]) - self.punto(nombres[1])
+        if nombre_rana == nombres[0]:
+            return resultado1
+        return resultado2
 
 
 class RanaMiniMax(Rana):
