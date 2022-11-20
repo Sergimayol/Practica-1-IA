@@ -1,12 +1,15 @@
 from agent import Rana, Estado
 from ia_2022 import entorn
-from practica1 import joc, entorn as entorn_practica1
 from practica1.entorn import AccionsRana, ClauPercepcio, Direccio
 import copy
-import os
 
 
 class Estado:
+
+    COSTE_MOVERSE = 1
+    COSTE_ESPERAR = 0.5
+    COSTE_SALTAR = 6
+
     def __init__(
         self,
         info: dict,
@@ -85,18 +88,6 @@ class Estado:
         return False
         # return self.__coste < __o.get_coste()
 
-    def calcular_heuritica(self, nombre_rana) -> int:
-        # obtener la posicion de la rana
-        pos_rana = self.__info.get(ClauPercepcio.POSICIO).get(nombre_rana)
-        # obtener la posicion del olor
-        pos_olor = self.__info.get(ClauPercepcio.OLOR)
-        # calcular la distancia de Manhattan y añadir el coste
-        return (
-            abs(pos_rana[0] - pos_olor[0])
-            + abs(pos_rana[1] - pos_olor[1])
-            + self.__coste
-        )
-
     def get_frog_names(self) -> list[str]:
         return list(self.__info.get(ClauPercepcio.POSICIO).keys())
 
@@ -107,29 +98,31 @@ class Estado:
         return pos_actual not in walls
 
     def generar_hijos(self, nombre_rana: str) -> list:
-        """
-        Esta funcion genera los posibles estados hijos de un estado,
+        """Esta funcion genera los posibles estados hijos de un estado,
         siempre y cuando sean legales.
         Args:
-            nombre_rana (_str_): nombre de la rana que se desea generar los hijos
+            nombre_rana (str): nombre de la rana que se desea generar los hijos
         Returns:
-            _list_: list de estados hijos generados
+            hijos (list): lista de estados hijos generados
         """
-
         hijos = []
-
         # pos 0 = x, pos 1 = y (empiezan en 0)
         pos_actual = self.__info.get(ClauPercepcio.POSICIO).get(nombre_rana)
+
         if pos_actual[0] > 0:
             # movimientos a la izquierda
             new_pos = (pos_actual[0] - 1, pos_actual[1])
-            # Estado hijo a crear
-            estado_hijo: Estado = None
             if self.legal(new_pos):
                 hijo = copy.deepcopy(self.__info)
                 hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                estado_hijo = Estado(
-                    hijo, self.__coste + 1, self, Direccio.ESQUERRE, AccionsRana.MOURE
+                hijos.append(
+                    Estado(
+                        hijo,
+                        self.__coste + self.COSTE_MOVERSE,
+                        self,
+                        Direccio.ESQUERRE,
+                        AccionsRana.MOURE,
+                    )
                 )
 
             if pos_actual[0] > 1:
@@ -137,26 +130,30 @@ class Estado:
                 if self.legal(new_pos):
                     hijo = copy.deepcopy(self.__info)
                     hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                    estado_hijo = Estado(
-                        hijo,
-                        self.__coste + 2,
-                        self,
-                        Direccio.ESQUERRE,
-                        AccionsRana.BOTAR,
+                    hijos.append(
+                        Estado(
+                            hijo,
+                            self.__coste + self.COSTE_SALTAR,
+                            self,
+                            Direccio.ESQUERRE,
+                            AccionsRana.BOTAR,
+                        )
                     )
-            if estado_hijo is not None:
-                hijos.append(estado_hijo)
 
         if pos_actual[0] < self.__max_tablero:
             # movimientos a la derecha
             new_pos = (pos_actual[0] + 1, pos_actual[1])
-            # Estado hijo a crear
-            estado_hijo: Estado = None
             if self.legal(new_pos):
                 hijo = copy.deepcopy(self.__info)
                 hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                estado_hijo = Estado(
-                    hijo, self.__coste + 1, self, Direccio.DRETA, AccionsRana.MOURE
+                hijos.append(
+                    Estado(
+                        hijo,
+                        self.__coste + self.COSTE_MOVERSE,
+                        self,
+                        Direccio.DRETA,
+                        AccionsRana.MOURE,
+                    )
                 )
 
             if pos_actual[0] < self.__max_tablero - 1:
@@ -164,27 +161,30 @@ class Estado:
                 if self.legal(new_pos):
                     hijo = copy.deepcopy(self.__info)
                     hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                    estado_hijo = Estado(
-                        hijo,
-                        self.__coste + 2,
-                        self,
-                        Direccio.DRETA,
-                        AccionsRana.BOTAR,
+                    hijos.append(
+                        Estado(
+                            hijo,
+                            self.__coste + self.COSTE_SALTAR,
+                            self,
+                            Direccio.DRETA,
+                            AccionsRana.BOTAR,
+                        )
                     )
-
-            if estado_hijo is not None:
-                hijos.append(estado_hijo)
 
         if pos_actual[1] > 0:
             # movimientos hacia arriba
             new_pos = (pos_actual[0], pos_actual[1] - 1)
-            # Estado hijo a crear
-            estado_hijo: Estado = None
             if self.legal(new_pos):
                 hijo = copy.deepcopy(self.__info)
                 hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                estado_hijo = Estado(
-                    hijo, self.__coste + 1, self, Direccio.DALT, AccionsRana.MOURE
+                hijos.append(
+                    Estado(
+                        hijo,
+                        self.__coste + self.COSTE_MOVERSE,
+                        self,
+                        Direccio.DALT,
+                        AccionsRana.MOURE,
+                    )
                 )
 
             if pos_actual[1] > 1:
@@ -192,23 +192,30 @@ class Estado:
                 if self.legal(new_pos):
                     hijo = copy.deepcopy(self.__info)
                     hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                    estado_hijo = Estado(
-                        hijo, self.__coste + 2, self, Direccio.DALT, AccionsRana.BOTAR
+                    hijos.append(
+                        Estado(
+                            hijo,
+                            self.__coste + self.COSTE_SALTAR,
+                            self,
+                            Direccio.DALT,
+                            AccionsRana.BOTAR,
+                        )
                     )
-
-            if estado_hijo is not None:
-                hijos.append(estado_hijo)
 
         if pos_actual[1] < self.__max_tablero:
             # movimientos hacia abajo
             new_pos = (pos_actual[0], pos_actual[1] + 1)
-            # Estado hijo a crear
-            estado_hijo: Estado = None
             if self.legal(new_pos):
                 hijo = copy.deepcopy(self.__info)
                 hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                estado_hijo = Estado(
-                    hijo, self.__coste + 1, self, Direccio.BAIX, AccionsRana.MOURE
+                hijos.append(
+                    Estado(
+                        hijo,
+                        self.__coste + self.COSTE_MOVERSE,
+                        self,
+                        Direccio.BAIX,
+                        AccionsRana.MOURE,
+                    )
                 )
 
             if pos_actual[1] < self.__max_tablero - 1:
@@ -216,27 +223,30 @@ class Estado:
                 if self.legal(new_pos):
                     hijo = copy.deepcopy(self.__info)
                     hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
-                    estado_hijo = Estado(
-                        hijo, self.__coste + 2, self, Direccio.BAIX, AccionsRana.BOTAR
+                    hijos.append(
+                        Estado(
+                            hijo,
+                            self.__coste + self.COSTE_SALTAR,
+                            self,
+                            Direccio.BAIX,
+                            AccionsRana.BOTAR,
+                        )
                     )
 
-            if estado_hijo is not None:
-                hijos.append(estado_hijo)
         return hijos
 
-    def punto(self, nombre_rana):
+    def _punto(self, nombre_rana) -> int:
         pos_comida = self.get_comida()
         pos_rana = self.get_posicion(nombre_rana)
-        punto = abs(pos_comida[0] - pos_rana[0]) + abs(pos_comida[1] - pos_rana[1])
-        return punto
+        return abs(pos_comida[0] - pos_rana[0]) + abs(pos_comida[1] - pos_rana[1])
 
     def puntuacion(self, nombre_rana: str) -> int:
         nombres = self.get_frog_names()
-        resultado1 = self.punto(nombres[1]) - self.punto(nombres[0])
-        resultado2 = self.punto(nombres[0]) - self.punto(nombres[1])
-        if nombre_rana == nombres[0]:
-            return resultado1
-        return resultado2
+
+        resultado1 = self._punto(nombres[1]) - self._punto(nombres[0])
+        resultado2 = self._punto(nombres[0]) - self._punto(nombres[1])
+
+        return resultado1 if nombre_rana == nombres[0] else resultado2
 
 
 class RanaMiniMax(Rana):
@@ -248,7 +258,9 @@ class RanaMiniMax(Rana):
     def pinta(self, display):
         pass
 
-    def busqueda_minimax(self, estado: Estado, turno: bool, recursividad: int):
+    def busqueda_minimax(
+        self, estado: Estado, turno: bool = True, recursividad: int = 2
+    ):
         """Algoritmo de busqueda minimax
         Min -> False
         Args:
@@ -258,19 +270,15 @@ class RanaMiniMax(Rana):
             int: Valor de la mejor accion
         """
         puntuacion = estado.puntuacion(self.nom)
-        if recursividad == 2 or estado.es_meta(self.nom):
+        if recursividad == 0 or estado.es_meta(self.nom):
             return puntuacion, estado
 
-        # [print(self.minimax(estat_fill, not turno_max, recursividad + 1)) for estat_fill in estat.genera_fills()]
-        point_fills = [
-            self.busqueda_minimax(estat_fill, not turno, recursividad + 1)
+        estados_hijos = [
+            self.busqueda_minimax(estat_fill, not turno, recursividad - 1)
             for estat_fill in estado.generar_hijos(self.nom)
         ]
-        # print(punto)
-        if turno:
-            return max(point_fills)
-        else:
-            return min(point_fills)
+
+        return max(estados_hijos) if turno else min(estados_hijos)
 
     def actua(
         self, percep: entorn.Percepcio
@@ -285,7 +293,7 @@ class RanaMiniMax(Rana):
         )
 
         # Devuelve puntuacion y estado
-        resultado = self.busqueda_minimax(estado_inicial, turno=True, recursividad=0)
+        resultado = self.busqueda_minimax(estado_inicial)
         iterador = resultado[1]
         accion: Estado = iterador.padre
         iterador = iterador.padre
