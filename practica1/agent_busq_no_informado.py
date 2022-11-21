@@ -1,4 +1,3 @@
-from agent import Rana
 from ia_2022 import entorn
 from practica1.entorn import AccionsRana, ClauPercepcio, Direccio
 from practica1 import joc
