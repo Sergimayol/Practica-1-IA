@@ -1,8 +1,8 @@
 from queue import PriorityQueue
 import random
-from agent import Rana
 from ia_2022 import entorn
 from practica1.entorn import AccionsRana, ClauPercepcio, Direccio
+from practica1 import joc
 
 
 class Individuo:
@@ -239,11 +239,14 @@ class Individuo:
         return acciones_direcciones
 
 
-class RanaGenetica(Rana):
+class RanaGenetica(joc.Rana):
     def __init__(self, *args, **kwargs):
-        super(Rana, self).__init__(*args, **kwargs)
+        super(RanaGenetica, self).__init__(*args, **kwargs)
         self.__acciones = None
         self.__saltando = 0
+
+    def pinta(self, display):
+        pass
 
     def _busquedaGenetica(self, individuo: Individuo) -> bool:
         """Realiza la búsqueda genética.
