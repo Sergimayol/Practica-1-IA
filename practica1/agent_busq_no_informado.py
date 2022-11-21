@@ -1,6 +1,7 @@
 from agent import Rana
 from ia_2022 import entorn
 from practica1.entorn import AccionsRana, ClauPercepcio, Direccio
+from practica1 import joc
 import copy
 
 
@@ -182,13 +183,16 @@ class Estado:
         return hijos
 
 
-class RanaBusquedaNoInformada(Rana):
+class RanaBusquedaNoInformada(joc.Rana):
     def __init__(self, *args, **kwargs):
-        super(Rana, self).__init__(*args, **kwargs)
+        super(RanaBusquedaNoInformada, self).__init__(*args, **kwargs)
         self.__abiertos = None
         self.__cerrados = None
         self.__acciones = None
         self.__saltando = 0
+
+    def pinta(self, display):
+        pass
 
     def _buscar(self, estado: Estado, nombre_rana: str) -> bool:
         """Método que implementa el algoritmo de búsqueda no informada. Este método
