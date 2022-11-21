@@ -1,6 +1,7 @@
 from agent import Rana
 from ia_2022 import entorn
 from practica1.entorn import AccionsRana, ClauPercepcio, Direccio
+from practica1 import joc
 import copy
 
 
@@ -249,11 +250,11 @@ class Estado:
         return resultado1 if nombre_rana == nombres[0] else resultado2
 
 
-class RanaMiniMax(Rana):
+class RanaMiniMax(joc.Rana):
     def __init__(self, *args, **kwargs):
-        super(Rana, self).__init__(*args, **kwargs)
+        super(RanaMiniMax, self).__init__(*args, **kwargs)
 
-        self.__saltando = False
+        self.__saltando = 0
 
     def pinta(self, display):
         pass
