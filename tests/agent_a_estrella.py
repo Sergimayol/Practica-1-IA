@@ -1,6 +1,6 @@
-import time
-import sys
 from queue import PriorityQueue
+import sys
+import time
 from agent import Rana
 from ia_2022 import entorn
 from practica1.entorn import AccionsRana, ClauPercepcio, Direccio
@@ -135,7 +135,7 @@ class Estado:
                 hijos.append(
                     Estado(
                         hijo,
-                        self.COSTE_MOVERSE,
+                        self.__coste + self.COSTE_MOVERSE,
                         self,
                         Direccio.ESQUERRE,
                         AccionsRana.MOURE,
@@ -150,7 +150,7 @@ class Estado:
                     hijos.append(
                         Estado(
                             hijo,
-                            self.COSTE_SALTAR,
+                            self.__coste + self.COSTE_SALTAR,
                             self,
                             Direccio.ESQUERRE,
                             AccionsRana.BOTAR,
@@ -166,7 +166,7 @@ class Estado:
                 hijos.append(
                     Estado(
                         hijo,
-                        self.COSTE_MOVERSE,
+                        self.__coste + self.COSTE_MOVERSE,
                         self,
                         Direccio.DRETA,
                         AccionsRana.MOURE,
@@ -181,7 +181,7 @@ class Estado:
                     hijos.append(
                         Estado(
                             hijo,
-                            self.COSTE_SALTAR,
+                            self.__coste + self.COSTE_SALTAR,
                             self,
                             Direccio.DRETA,
                             AccionsRana.BOTAR,
@@ -196,7 +196,11 @@ class Estado:
                 hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
                 hijos.append(
                     Estado(
-                        hijo, self.COSTE_MOVERSE, self, Direccio.DALT, AccionsRana.MOURE
+                        hijo,
+                        self.__coste + self.COSTE_MOVERSE,
+                        self,
+                        Direccio.DALT,
+                        AccionsRana.MOURE,
                     )
                 )
 
@@ -208,7 +212,7 @@ class Estado:
                     hijos.append(
                         Estado(
                             hijo,
-                            self.COSTE_SALTAR,
+                            self.__coste + self.COSTE_SALTAR,
                             self,
                             Direccio.DALT,
                             AccionsRana.BOTAR,
@@ -223,7 +227,11 @@ class Estado:
                 hijo[ClauPercepcio.POSICIO][nombre_rana] = new_pos
                 hijos.append(
                     Estado(
-                        hijo, self.COSTE_MOVERSE, self, Direccio.BAIX, AccionsRana.MOURE
+                        hijo,
+                        self.__coste + self.COSTE_MOVERSE,
+                        self,
+                        Direccio.BAIX,
+                        AccionsRana.MOURE,
                     )
                 )
 
@@ -235,7 +243,7 @@ class Estado:
                     hijos.append(
                         Estado(
                             hijo,
-                            self.COSTE_SALTAR,
+                            self.__coste + self.COSTE_SALTAR,
                             self,
                             Direccio.BAIX,
                             AccionsRana.BOTAR,
